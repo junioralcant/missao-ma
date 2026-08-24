@@ -3,6 +3,7 @@ import {
   clearDefaultGroupLink,
   createGroup,
   deleteGroup,
+  deleteRegistration,
   getDefaultGroupLink,
   getGroupByCity,
   getGroupById,
@@ -136,6 +137,19 @@ describe('repository', () => {
 
       expect(getRegistrationByCpf('52998224725')?.name).toBe('Maria Silva');
       expect(getRegistrationByCpf('11144477735')).toBe(null);
+    });
+
+    it('deve remover um cadastro e sinalizar quando nao existe', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        cpf: '52998224725',
+        city: 'São Luís',
+      });
+      const id = listRegistrations()[0].id;
+
+      expect(deleteRegistration(id)).toBe(true);
+      expect(listRegistrations()).toHaveLength(0);
+      expect(deleteRegistration(id)).toBe(false);
     });
 
     it('deve listar cadastros mais recentes primeiro', () => {

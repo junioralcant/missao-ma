@@ -65,21 +65,26 @@ export const updateGroupLink = (
   id: number,
   whatsappLink: string,
 ): Group | null => {
-  getDb().prepare(
-    "UPDATE groups SET whatsapp_link = ?, updated_at = datetime('now') WHERE id = ?",
-  ).run(whatsappLink, id);
+  getDb()
+    .prepare(
+      "UPDATE groups SET whatsapp_link = ?, updated_at = datetime('now') WHERE id = ?",
+    )
+    .run(whatsappLink, id);
   return getGroupById(id);
 };
 
 export const deleteGroup = (id: number): boolean =>
-  Number(getDb().prepare('DELETE FROM groups WHERE id = ?').run(id).changes) > 0;
+  Number(getDb().prepare('DELETE FROM groups WHERE id = ?').run(id).changes) >
+  0;
 
 export const upsertRegistration = (input: RegistrationInput): void => {
-  getDb().prepare(
-    `INSERT INTO registrations (name, cpf, city) VALUES (?, ?, ?)
+  getDb()
+    .prepare(
+      `INSERT INTO registrations (name, cpf, city) VALUES (?, ?, ?)
      ON CONFLICT (cpf)
      DO UPDATE SET name = excluded.name, created_at = datetime('now')`,
-  ).run(input.name, input.cpf, input.city);
+    )
+    .run(input.name, input.cpf, input.city);
 };
 
 export const getRegistrationByCpf = (cpf: string): Registration | null => {
@@ -88,6 +93,11 @@ export const getRegistrationByCpf = (cpf: string): Registration | null => {
     .get(cpf) as unknown as RegistrationRow | undefined;
   return row ? toRegistration(row) : null;
 };
+
+export const deleteRegistration = (id: number): boolean =>
+  Number(
+    getDb().prepare('DELETE FROM registrations WHERE id = ?').run(id).changes,
+  ) > 0;
 
 export const listRegistrations = (): Registration[] =>
   (
@@ -106,12 +116,16 @@ export const getDefaultGroupLink = (): string | null => {
 };
 
 export const setDefaultGroupLink = (whatsappLink: string): void => {
-  getDb().prepare(
-    `INSERT INTO settings (key, value) VALUES (?, ?)
+  getDb()
+    .prepare(
+      `INSERT INTO settings (key, value) VALUES (?, ?)
      ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
-  ).run(DEFAULT_GROUP_LINK_KEY, whatsappLink);
+    )
+    .run(DEFAULT_GROUP_LINK_KEY, whatsappLink);
 };
 
 export const clearDefaultGroupLink = (): void => {
-  getDb().prepare('DELETE FROM settings WHERE key = ?').run(DEFAULT_GROUP_LINK_KEY);
+  getDb()
+    .prepare('DELETE FROM settings WHERE key = ?')
+    .run(DEFAULT_GROUP_LINK_KEY);
 };
