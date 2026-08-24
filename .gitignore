@@ -1,0 +1,16 @@
+node_modules/
+.next/
+out/
+.swc/
+tsconfig.tsbuildinfo
+
+/data/
+.env
+.env.local
+.env.*.local
+
+/.claude/
+/scripts/
+
+*.log
+.DS_Store
