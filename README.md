@@ -79,7 +79,27 @@ Suíte Jest (preset `next/jest`), sem mocks de código próprio:
 
 ## Deploy
 
-O banco é um arquivo SQLite — hospede em um servidor com disco persistente (VPS, Railway, Fly.io, Render com disco). **Não** use Vercel/plataformas serverless sem trocar o banco (o filesystem não persiste); nesse caso migre para Postgres.
+Em produção no Railway: **https://web-production-9572a.up.railway.app**
+
+O banco é um arquivo SQLite, então o serviço precisa de **disco persistente** e **uma única réplica** (Vercel e outras plataformas serverless não servem sem trocar para Postgres).
+
+Configuração do serviço no Railway:
+
+| Item            | Valor                                                          |
+| --------------- | -------------------------------------------------------------- |
+| Volume          | montado em `/data`                                             |
+| `DATABASE_PATH` | `/data/app.db`                                                 |
+| Réplicas        | 1 (SQLite é arquivo local)                                     |
+| Node            | 22.5+ (via `engines`, por causa do `node:sqlite`)              |
+| Build / start   | `npm run build` / `npm start` (o `next start` respeita `PORT`) |
+
+Deploys a partir do `main` são automáticos (repo conectado). O primeiro acesso ao banco cria o arquivo e as tabelas no volume.
+
+### Cuidados
+
+- **Backup**: o volume guarda CPFs. Configure backup do volume no Railway ou exporte o CSV periodicamente.
+- **Não versionar** `data/` nem `.env.local` — já cobertos pelo `.gitignore`.
+- Um `next build` **não** deve abrir o banco: a conexão é lazy (`getDb()`) justamente porque o build importa as rotas em processos paralelos e o SQLite trava com escrita concorrente.
 
 ## LGPD
 
