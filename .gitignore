@@ -14,3 +14,7 @@ tsconfig.tsbuildinfo
 
 *.log
 .DS_Store
+
+docs/shots/
+docs/node_modules/
+docs/*.pdf

@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Missão Maranhão — Manual de Uso</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Barlow+Condensed:wght@500;600&family=Afacad:wght@400;500;600;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12181A;
+    --body: #333F43;
+    --muted: #6B7A80;
+    --gold: #C88A00;
+    --gold-bright: #FBAC1E;
+    --dark: #070D0C;
+    --line: #DFE5E7;
+    --soft: #F5F7F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Afacad', -apple-system, sans-serif;
+    color: var(--body);
+    font-size: 11.5pt;
+    line-height: 1.5;
+  }
+  .page { page-break-after: always; padding: 4mm 0; }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- CAPA ---------- */
+  .cover {
+    background: var(--dark);
+    color: #fff;
+    height: 247mm;
+    padding: 30mm 22mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+  .cover-mark { font-family: 'Fjalla One'; font-size: 26pt; letter-spacing: .5px; }
+  .cover-mark span { color: var(--gold-bright); }
+  .cover-eyebrow {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 12pt;
+    letter-spacing: .3em; text-transform: uppercase; color: var(--gold-bright);
+    margin-bottom: 6mm;
+  }
+  .cover h1 { font-family: 'Fjalla One'; font-size: 46pt; line-height: 1.05; font-weight: 400; }
+  .cover-sub { font-size: 14pt; color: #C9D3D6; margin-top: 6mm; max-width: 120mm; }
+  .cover-foot { font-family: 'Fragment Mono'; font-size: 9pt; color: #7E8C90; }
+  .cover-rule { width: 40mm; height: 3px; background: var(--gold-bright); margin: 8mm 0; }
+
+  /* ---------- TIPOGRAFIA ---------- */
+  h2 {
+    font-family: 'Fjalla One'; font-weight: 400; font-size: 20pt;
+    color: var(--ink); margin: 0 0 3mm;
+  }
+  h3 {
+    font-family: 'Fjalla One'; font-weight: 400; font-size: 13.5pt;
+    color: var(--ink); margin: 7mm 0 2mm;
+  }
+  .section-tag {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 10pt;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 1.5mm;
+  }
+  p { margin-bottom: 3mm; }
+  strong { color: var(--ink); font-weight: 600; }
+  .lead { font-size: 12.5pt; color: var(--body); }
+  code {
+    font-family: 'Fragment Mono'; font-size: 9.5pt;
+    background: var(--soft); padding: 1px 4px; border-radius: 3px; color: var(--ink);
+  }
+
+  /* ---------- BLOCOS ---------- */
+  .divider { height: 1px; background: var(--line); margin: 6mm 0; }
+  .callout {
+    border-left: 3px solid var(--gold-bright);
+    background: #FFF8E9;
+    padding: 3.5mm 5mm;
+    margin: 4mm 0;
+    font-size: 11pt;
+  }
+  .callout.warn { border-left-color: #C0392B; background: #FDEDEA; }
+  .callout-title {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 10pt;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+    display: block; margin-bottom: 1mm;
+  }
+  .callout.warn .callout-title { color: #C0392B; }
+
+  .steps { counter-reset: step; }
+  .step { position: relative; padding-left: 11mm; margin-bottom: 4mm; }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: -0.5mm;
+    width: 7.5mm; height: 7.5mm; border-radius: 50%;
+    background: var(--dark); color: var(--gold-bright);
+    font-family: 'Fragment Mono'; font-size: 9.5pt;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-title { font-weight: 600; color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0; font-size: 10.5pt; }
+  th {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 9.5pt;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 2mm 3mm; border-bottom: 1.5px solid var(--line);
+  }
+  td { padding: 2.5mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+
+  /* ---------- IMAGENS ---------- */
+  figure { margin: 4mm 0; page-break-inside: avoid; }
+  figure img {
+    display: block; width: 100%;
+    border: 1px solid var(--line); border-radius: 3mm;
+  }
+  figcaption {
+    font-family: 'Barlow Condensed'; font-weight: 500; font-size: 9.5pt;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); margin-top: 2mm; text-align: center;
+  }
+  .shots-2 { display: flex; gap: 6mm; page-break-inside: avoid; }
+  .shots-2 figure { flex: 1; margin: 3mm 0; }
+  .phone img { border-radius: 4mm; }
+</style>
+</head>
+<body>
+
+<!-- CAPA -->
+<div class="cover">
+  <div class="cover-mark">Missão <span>Maranhão</span></div>
+  <div>
+    <div class="cover-eyebrow">Manual de uso</div>
+    <h1>Grupos de<br>WhatsApp<br>por cidade</h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">
+      Como funciona o site para o cidadão e como administrar os grupos de cada
+      município do Maranhão.
+    </div>
+  </div>
+  <div class="cover-foot">Versão 1.0 · Agosto de 2026</div>
+</div>
+
+<!-- VISÃO GERAL -->
+<div class="page">
+  <div class="section-tag">Parte 1</div>
+  <h2>O que é o sistema</h2>
+  <p class="lead">
+    O <strong>Missão Maranhão</strong> conecta cada pessoa ao grupo de WhatsApp
+    da sua própria cidade. A pessoa informa nome, CPF e escolhe o município —
+    o sistema registra o cadastro e a encaminha direto para o grupo certo.
+  </p>
+  <p>
+    Para vocês, fica o controle: os links de cada cidade são cadastrados em uma
+    área administrativa protegida por senha, e todos os cadastros recebidos podem
+    ser consultados e exportados em planilha.
+  </p>
+
+  <h3>Endereços</h3>
+  <table>
+    <tr><th>Onde</th><th>Endereço</th><th>Quem usa</th></tr>
+    <tr>
+      <td>Site público</td>
+      <td><code>www.missaoma.com.br</code></td>
+      <td>Qualquer pessoa (link divulgado)</td>
+    </tr>
+    <tr>
+      <td>Área administrativa</td>
+      <td><code>www.missaoma.com.br/admin</code></td>
+      <td>Equipe da Missão (com senha)</td>
+    </tr>
+  </table>
+
+  <div class="callout">
+    <span class="callout-title">Senha de acesso</span>
+    A senha da área administrativa é entregue separadamente, por segurança —
+    ela não faz parte deste documento. Guarde-a em local seguro e compartilhe
+    apenas com quem for administrar os grupos.
+  </div>
+
+  <h3>Os 217 municípios já estão cadastrados</h3>
+  <p>
+    A lista de cidades vem da base oficial do IBGE e cobre <strong>todos os
+    municípios do Maranhão</strong>. Ninguém consegue digitar uma cidade que
+    não exista ou que seja de outro estado — o sistema só aceita municípios
+    maranhenses.
+  </p>
+</div>
+
+<!-- FLUXO PÚBLICO -->
+<div class="page">
+  <div class="section-tag">Parte 2</div>
+  <h2>Como a pessoa entra no grupo</h2>
+  <p>
+    O caminho tem quatro passos e leva menos de um minuto. Funciona no celular
+    e no computador.
+  </p>
+
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/01-publica-inicial.png" alt="Tela inicial do site">
+      <figcaption>1 · Tela inicial</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/02-publica-preenchida.png" alt="Nome e CPF preenchidos">
+      <figcaption>2 · Nome e CPF</figcaption>
+    </figure>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">Informar o nome completo.</span>
+      Campo livre, obrigatório.
+    </div>
+    <div class="step">
+      <span class="step-title">Digitar o CPF.</span>
+      A pontuação é preenchida sozinha enquanto a pessoa digita. O sistema
+      confere se o CPF é válido de verdade — número inventado é recusado na hora.
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/03-publica-busca-cidade.png" alt="Busca de cidade">
+      <figcaption>3 · Busca da cidade</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/04-publica-pronta.png" alt="Formulário pronto para enviar">
+      <figcaption>4 · Pronto para entrar</figcaption>
+    </figure>
+  </div>
+
+  <div class="steps" style="counter-reset: step 2;">
+    <div class="step">
+      <span class="step-title">Buscar a cidade.</span>
+      Basta começar a digitar que as sugestões aparecem. A busca ignora acentos
+      e maiúsculas — quem digitar <code>sao luis</code> encontra
+      <strong>São Luís</strong> do mesmo jeito.
+    </div>
+    <div class="step">
+      <span class="step-title">Autorizar e entrar.</span>
+      O botão só fica ativo depois que a pessoa marca a autorização de uso dos
+      dados — antes disso ele aparece apagado, como nas telas 1 e 2. Ao tocar,
+      o cadastro é salvo e ela é levada automaticamente ao grupo da cidade dela.
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">Se a cidade ainda não tem grupo</span>
+    A pessoa não fica sem resposta: ela é direcionada para o
+    <strong>grupo padrão</strong> que vocês configuram na área administrativa.
+    Mesmo assim, o cadastro guarda a cidade real informada — assim vocês
+    enxergam onde há demanda para abrir um grupo novo.
+  </div>
+
+  <div class="callout warn">
+    <span class="callout-title">Cada CPF entra uma vez só</span>
+    Se a mesma pessoa tentar se cadastrar de novo na mesma cidade, ela apenas
+    recebe o link do grupo outra vez, sem duplicar o cadastro. Se tentar em uma
+    cidade diferente, o sistema recusa. Isso evita cadastros repetidos inflando
+    os números.
+  </div>
+</div>
+
+<!-- ADMIN: LOGIN -->
+<div class="page">
+  <div class="section-tag">Parte 3</div>
+  <h2>Área administrativa</h2>
+  <p>
+    É onde vocês cadastram os links dos grupos e acompanham quem se inscreveu.
+    O acesso é feito em <code>www.missaoma.com.br/admin</code> e exige senha.
+  </p>
+
+  <figure>
+    <img src="shots/05-admin-login.png" alt="Tela de login da área administrativa">
+    <figcaption>Tela de entrada · digite a senha e clique em Entrar</figcaption>
+  </figure>
+
+  <p>
+    Depois de entrar, o acesso fica guardado no navegador por 7 dias. Para sair
+    antes disso, use o botão <strong>Sair</strong> no canto superior direito —
+    importante se o computador for compartilhado.
+  </p>
+
+  <h3>O painel tem três blocos</h3>
+  <table>
+    <tr><th>Bloco</th><th>Para que serve</th></tr>
+    <tr><td>Grupo padrão</td><td>Link usado quando a cidade escolhida ainda não tem grupo próprio</td></tr>
+    <tr><td>Grupos por cidade</td><td>Cadastrar, editar e remover o link de cada município</td></tr>
+    <tr><td>Cadastros</td><td>Ver todo mundo que se inscreveu e exportar em planilha</td></tr>
+  </table>
+</div>
+
+<!-- ADMIN: PAINEL COMPLETO -->
+<div class="page">
+  <h2>Visão geral do painel</h2>
+  <figure>
+    <img src="shots/06-admin-painel.png" alt="Painel administrativo completo">
+    <figcaption>Painel completo · grupo padrão, grupos por cidade e cadastros</figcaption>
+  </figure>
+</div>
+
+<!-- ADMIN: GRUPO PADRÃO E CADASTRO -->
+<div class="page">
+  <h2>Cadastrar os grupos</h2>
+
+  <h3>Grupo padrão</h3>
+  <p>
+    É a rede de segurança do sistema: enquanto uma cidade não tiver grupo
+    próprio, quem for dessa cidade cai neste link. Cole o link e clique em
+    <strong>Salvar</strong>.
+  </p>
+  <figure>
+    <img src="shots/07-admin-grupo-padrao.png" alt="Bloco do grupo padrão">
+    <figcaption>Grupo padrão · vale para toda cidade sem grupo próprio</figcaption>
+  </figure>
+
+  <h3>Grupo de uma cidade</h3>
+  <p>
+    Digite as primeiras letras do município, escolha na lista, cole o link do
+    convite e clique em <strong>Cadastrar</strong>. O grupo da cidade sempre
+    tem prioridade sobre o padrão.
+  </p>
+  <figure>
+    <img src="shots/08-admin-cadastrar-grupo.png" alt="Cadastro de grupo por cidade">
+    <figcaption>Busca do município com sugestões automáticas</figcaption>
+  </figure>
+
+  <div class="callout">
+    <span class="callout-title">Onde encontrar o link do convite</span>
+    No WhatsApp, abra o grupo → toque no nome do grupo → <strong>Convidar via
+    link</strong> → <strong>Copiar link</strong>. Cole exatamente como está: o
+    sistema aceita o link mesmo com os complementos que o WhatsApp adiciona no
+    fim, e guarda a versão limpa.
+  </div>
+</div>
+
+<!-- ADMIN: CADASTROS -->
+<div class="page">
+  <h2>Acompanhar os cadastros</h2>
+  <p>
+    A lista mostra todo mundo que se inscreveu, do mais recente para o mais
+    antigo, com nome, CPF, cidade e data. O número ao lado do título é o total
+    de inscritos.
+  </p>
+
+  <figure>
+    <img src="shots/09-admin-cadastros.png" alt="Lista de cadastros recebidos">
+    <figcaption>Cadastros recebidos · com exportação em planilha</figcaption>
+  </figure>
+
+  <h3>Exportar para planilha</h3>
+  <p>
+    O botão <strong>Exportar CSV</strong> baixa um arquivo que abre direto no
+    Excel ou no Google Planilhas, com acentuação correta. Use para conferir
+    números, cruzar dados por cidade ou guardar uma cópia.
+  </p>
+
+  <div class="callout warn">
+    <span class="callout-title">Cuidado com esses dados</span>
+    A planilha contém CPFs, que são dados pessoais protegidos pela LGPD.
+    Não envie por grupos de WhatsApp, não publique e não compartilhe com quem
+    não precisa. Guarde apenas enquanto for necessário.
+  </div>
+
+  <h3>Como ler os números</h3>
+  <p>
+    Se muitas pessoas de uma mesma cidade aparecem na lista e essa cidade ainda
+    não tem grupo próprio, é o sinal de que vale criar um. Elas foram para o
+    grupo padrão, mas a cidade real delas está registrada ali.
+  </p>
+</div>
+
+<!-- RESUMO -->
+<div class="page">
+  <div class="section-tag">Resumo</div>
+  <h2>O essencial em uma página</h2>
+
+  <table>
+    <tr><th>Situação</th><th>O que acontece</th></tr>
+    <tr>
+      <td>Cidade com grupo</td>
+      <td>A pessoa vai para o grupo da cidade dela</td>
+    </tr>
+    <tr>
+      <td>Cidade sem grupo</td>
+      <td>A pessoa vai para o grupo padrão; a cidade real fica registrada</td>
+    </tr>
+    <tr>
+      <td>Nenhum grupo padrão</td>
+      <td>A pessoa vê um aviso de que a cidade ainda não tem grupo</td>
+    </tr>
+    <tr>
+      <td>CPF inválido</td>
+      <td>O cadastro é recusado na hora, antes de enviar</td>
+    </tr>
+    <tr>
+      <td>CPF repetido, mesma cidade</td>
+      <td>Recebe o link de novo, sem duplicar o cadastro</td>
+    </tr>
+    <tr>
+      <td>CPF repetido, outra cidade</td>
+      <td>O cadastro é recusado</td>
+    </tr>
+  </table>
+
+  <div class="divider"></div>
+
+  <h3>Rotina sugerida</h3>
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">Antes de divulgar.</span>
+      Configure o grupo padrão e os grupos das cidades onde a Missão já está
+      organizada.
+    </div>
+    <div class="step">
+      <span class="step-title">Toda semana.</span>
+      Abra o painel, veja de quais cidades vieram os novos cadastros e crie
+      grupos para as que estão crescendo.
+    </div>
+    <div class="step">
+      <span class="step-title">Sempre que criar um grupo novo.</span>
+      Cadastre o link na cidade correspondente — a partir daí, quem for dessa
+      cidade já cai no grupo certo.
+    </div>
+    <div class="step">
+      <span class="step-title">De tempos em tempos.</span>
+      Exporte o CSV e guarde uma cópia em local seguro.
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <h3>Se algo não funcionar</h3>
+  <p>
+    O site fica no ar 24 horas por dia. Se alguém relatar que não conseguiu
+    entrar em um grupo, o motivo mais comum é o <strong>link do convite ter
+    expirado no WhatsApp</strong> — nesse caso, gere um link novo no grupo e
+    atualize pelo botão <strong>Editar</strong> no painel.
+  </p>
+</div>
+
+</body>
+</html>
