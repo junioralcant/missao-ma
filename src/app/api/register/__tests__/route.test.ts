@@ -1,4 +1,4 @@
-import {db} from '@/lib/db';
+import {getDb} from '@/lib/db';
 import {
   createGroup,
   listRegistrations,
@@ -17,7 +17,7 @@ const postRegister = (body: Record<string, unknown>) =>
 
 describe('POST /api/register', () => {
   beforeEach(() => {
-    db.exec(
+    getDb().exec(
       'DELETE FROM registrations; DELETE FROM groups; DELETE FROM settings;',
     );
     createGroup('São Luís', 'https://chat.whatsapp.com/AbC123');

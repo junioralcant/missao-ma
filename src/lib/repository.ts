@@ -1,4 +1,4 @@
-import {db} from './db';
+import {getDb} from './db';
 import type {Group, Registration, RegistrationInput} from './types';
 
 type GroupRow = {
@@ -35,27 +35,27 @@ const toRegistration = (row: RegistrationRow): Registration => ({
 
 export const listGroups = (): Group[] =>
   (
-    db
+    getDb()
       .prepare('SELECT * FROM groups ORDER BY city')
       .all() as unknown as GroupRow[]
   ).map(toGroup);
 
 export const getGroupById = (id: number): Group | null => {
-  const row = db
+  const row = getDb()
     .prepare('SELECT * FROM groups WHERE id = ?')
     .get(id) as unknown as GroupRow | undefined;
   return row ? toGroup(row) : null;
 };
 
 export const getGroupByCity = (city: string): Group | null => {
-  const row = db
+  const row = getDb()
     .prepare('SELECT * FROM groups WHERE city = ?')
     .get(city) as unknown as GroupRow | undefined;
   return row ? toGroup(row) : null;
 };
 
 export const createGroup = (city: string, whatsappLink: string): Group => {
-  const result = db
+  const result = getDb()
     .prepare('INSERT INTO groups (city, whatsapp_link) VALUES (?, ?)')
     .run(city, whatsappLink);
   return getGroupById(Number(result.lastInsertRowid)) as Group;
@@ -65,17 +65,17 @@ export const updateGroupLink = (
   id: number,
   whatsappLink: string,
 ): Group | null => {
-  db.prepare(
+  getDb().prepare(
     "UPDATE groups SET whatsapp_link = ?, updated_at = datetime('now') WHERE id = ?",
   ).run(whatsappLink, id);
   return getGroupById(id);
 };
 
 export const deleteGroup = (id: number): boolean =>
-  Number(db.prepare('DELETE FROM groups WHERE id = ?').run(id).changes) > 0;
+  Number(getDb().prepare('DELETE FROM groups WHERE id = ?').run(id).changes) > 0;
 
 export const upsertRegistration = (input: RegistrationInput): void => {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO registrations (name, cpf, city) VALUES (?, ?, ?)
      ON CONFLICT (cpf)
      DO UPDATE SET name = excluded.name, created_at = datetime('now')`,
@@ -83,7 +83,7 @@ export const upsertRegistration = (input: RegistrationInput): void => {
 };
 
 export const getRegistrationByCpf = (cpf: string): Registration | null => {
-  const row = db
+  const row = getDb()
     .prepare('SELECT * FROM registrations WHERE cpf = ?')
     .get(cpf) as unknown as RegistrationRow | undefined;
   return row ? toRegistration(row) : null;
@@ -91,7 +91,7 @@ export const getRegistrationByCpf = (cpf: string): Registration | null => {
 
 export const listRegistrations = (): Registration[] =>
   (
-    db
+    getDb()
       .prepare('SELECT * FROM registrations ORDER BY created_at DESC, id DESC')
       .all() as unknown as RegistrationRow[]
   ).map(toRegistration);
@@ -99,19 +99,19 @@ export const listRegistrations = (): Registration[] =>
 const DEFAULT_GROUP_LINK_KEY = 'default_group_link';
 
 export const getDefaultGroupLink = (): string | null => {
-  const row = db
+  const row = getDb()
     .prepare('SELECT value FROM settings WHERE key = ?')
     .get(DEFAULT_GROUP_LINK_KEY) as unknown as {value: string} | undefined;
   return row?.value ?? null;
 };
 
 export const setDefaultGroupLink = (whatsappLink: string): void => {
-  db.prepare(
+  getDb().prepare(
     `INSERT INTO settings (key, value) VALUES (?, ?)
      ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
   ).run(DEFAULT_GROUP_LINK_KEY, whatsappLink);
 };
 
 export const clearDefaultGroupLink = (): void => {
-  db.prepare('DELETE FROM settings WHERE key = ?').run(DEFAULT_GROUP_LINK_KEY);
+  getDb().prepare('DELETE FROM settings WHERE key = ?').run(DEFAULT_GROUP_LINK_KEY);
 };

@@ -4,6 +4,8 @@ import {DatabaseSync} from 'node:sqlite';
 
 const LEGACY_REGISTRATIONS_UNIQUE = 'UNIQUE (cpf, city)';
 
+const BUSY_TIMEOUT_MS = 5000;
+
 const migrateRegistrationsToUniqueCpf = (database: DatabaseSync): void => {
   const table = database
     .prepare(
@@ -36,6 +38,7 @@ const createDatabase = (): DatabaseSync => {
     process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'app.db');
   fs.mkdirSync(path.dirname(databasePath), {recursive: true});
   const database = new DatabaseSync(databasePath);
+  database.exec(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS};`);
   database.exec('PRAGMA journal_mode = WAL;');
   database.exec(`
     CREATE TABLE IF NOT EXISTS groups (
@@ -65,5 +68,5 @@ const globalForDb = globalThis as typeof globalThis & {
   appDatabase?: DatabaseSync;
 };
 
-export const db =
+export const getDb = (): DatabaseSync =>
   globalForDb.appDatabase ?? (globalForDb.appDatabase = createDatabase());

@@ -1,4 +1,4 @@
-import {db} from '../db';
+import {getDb} from '../db';
 import {
   clearDefaultGroupLink,
   createGroup,
@@ -16,7 +16,7 @@ import {
 
 describe('repository', () => {
   beforeEach(() => {
-    db.exec(
+    getDb().exec(
       'DELETE FROM registrations; DELETE FROM groups; DELETE FROM settings;',
     );
   });
@@ -157,7 +157,7 @@ describe('repository', () => {
 
 describe('grupo padrão', () => {
   beforeEach(() => {
-    db.exec('DELETE FROM settings;');
+    getDb().exec('DELETE FROM settings;');
   });
 
   it('deve retornar null quando não há grupo padrão', () => {
