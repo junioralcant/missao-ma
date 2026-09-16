@@ -10,7 +10,10 @@ tsconfig.tsbuildinfo
 .env.*.local
 
 /.claude/
-/scripts/
+/scripts/*
+!/scripts/estimar-eleitorado.js
+!/scripts/import-eleitorado.js
+!/scripts/importar-minuta.js
 
 *.log
 .DS_Store

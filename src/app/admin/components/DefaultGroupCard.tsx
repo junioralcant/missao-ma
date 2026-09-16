@@ -1,6 +1,7 @@
 'use client';
 
 import {FormEvent, useState} from 'react';
+import {ConfirmDialog} from './ConfirmDialog';
 
 type DefaultGroupCardProps = {
   initialLink: string | null;
@@ -12,6 +13,7 @@ export const DefaultGroupCard = ({initialLink}: DefaultGroupCardProps) => {
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isConfirmingRemoval, setIsConfirmingRemoval] = useState(false);
 
   const handleSave = async (event: FormEvent) => {
     event.preventDefault();
@@ -40,9 +42,7 @@ export const DefaultGroupCard = ({initialLink}: DefaultGroupCardProps) => {
   };
 
   const handleRemove = async () => {
-    if (!window.confirm('Remover o grupo padrão?')) {
-      return;
-    }
+    setIsConfirmingRemoval(false);
     setError('');
     setSuccess('');
     try {
@@ -64,6 +64,15 @@ export const DefaultGroupCard = ({initialLink}: DefaultGroupCardProps) => {
 
   return (
     <div>
+      {isConfirmingRemoval ? (
+        <ConfirmDialog
+          title="Remover grupo padrão"
+          message="Remover o grupo padrão? Cidades sem grupo próprio deixam de conseguir concluir o cadastro."
+          confirmLabel="Remover grupo padrão"
+          onConfirm={handleRemove}
+          onCancel={() => setIsConfirmingRemoval(false)}
+        />
+      ) : null}
       <p className="muted" style={{marginBottom: 16}}>
         Usado quando a cidade escolhida ainda não tem grupo próprio.
       </p>
@@ -92,7 +101,7 @@ export const DefaultGroupCard = ({initialLink}: DefaultGroupCardProps) => {
           <button
             className="btn btn--small btn--danger"
             type="button"
-            onClick={handleRemove}
+            onClick={() => setIsConfirmingRemoval(true)}
           >
             Remover
           </button>

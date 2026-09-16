@@ -5,6 +5,7 @@ import {CityPicker} from '@/app/components/CityPicker';
 import municipalities from '@/data/municipios-ma.json';
 import {findCityByName} from '@/lib/cities';
 import type {Group} from '@/lib/types';
+import {ConfirmDialog} from './ConfirmDialog';
 
 type GroupsManagerProps = {
   initialGroups: Group[];
@@ -18,6 +19,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
   const [editingLink, setEditingLink] = useState('');
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [pendingRemoval, setPendingRemoval] = useState<Group | null>(null);
 
   const sortByCity = (list: Group[]) =>
     [...list].sort((a, b) => a.city.localeCompare(b.city, 'pt-BR'));
@@ -81,9 +83,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
   };
 
   const handleDelete = async (group: Group) => {
-    if (!window.confirm(`Remover o grupo de ${group.city}?`)) {
-      return;
-    }
+    setPendingRemoval(null);
     setError('');
     try {
       const response = await fetch(`/api/admin/groups/${group.id}`, {
@@ -102,6 +102,15 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
 
   return (
     <div>
+      {pendingRemoval ? (
+        <ConfirmDialog
+          title="Remover grupo"
+          message={`Remover o grupo de ${pendingRemoval.city}? Quem escolher esta cidade passa a ser direcionado ao grupo padrão.`}
+          confirmLabel="Remover grupo"
+          onConfirm={() => handleDelete(pendingRemoval)}
+          onCancel={() => setPendingRemoval(null)}
+        />
+      ) : null}
       {error ? <div className="alert alert--error">{error}</div> : null}
       <form className="inline-form" onSubmit={handleCreate}>
         <CityPicker
@@ -191,7 +200,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
                           </button>
                           <button
                             className="btn btn--small btn--danger"
-                            onClick={() => handleDelete(group)}
+                            onClick={() => setPendingRemoval(group)}
                           >
                             Remover
                           </button>

@@ -40,3 +40,10 @@ export const getSessionCookieOptions = () => ({
   path: '/',
   maxAge: SESSION_MAX_AGE_SECONDS,
 });
+
+export const ADMIN_HOME = '/admin';
+
+const ADMIN_PATH_REGEX = /^\/admin(\/[A-Za-z0-9\-_/]*)?$/;
+
+export const sanitizeAdminRedirect = (value: string | undefined): string =>
+  value && ADMIN_PATH_REGEX.test(value) ? value : ADMIN_HOME;

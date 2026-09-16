@@ -1,6 +1,8 @@
+import crypto from 'crypto';
 import fs from 'fs';
 import path from 'path';
 import {DatabaseSync} from 'node:sqlite';
+import electorateSeed from '@/data/eleitorado-ma.json';
 
 const LEGACY_REGISTRATIONS_UNIQUE = 'UNIQUE (cpf, city)';
 
@@ -33,6 +35,42 @@ const migrateRegistrationsToUniqueCpf = (database: DatabaseSync): void => {
   `);
 };
 
+const electorateSignature = (): string =>
+  crypto
+    .createHash('sha256')
+    .update(JSON.stringify(electorateSeed))
+    .digest('hex');
+
+const syncElectorate = (database: DatabaseSync): void => {
+  const signature = electorateSignature();
+  const current = database
+    .prepare('SELECT signature FROM electorate_source WHERE id = 1')
+    .get() as unknown as {signature: string} | undefined;
+  if (current?.signature === signature) {
+    return;
+  }
+  const upsert = database.prepare(
+    `INSERT INTO municipality_electorate (city, electorate) VALUES (?, ?)
+     ON CONFLICT (city) DO UPDATE SET electorate = excluded.electorate`,
+  );
+  database.exec('BEGIN;');
+  for (const [city, electorate] of Object.entries(electorateSeed.municipios)) {
+    upsert.run(city, electorate);
+  }
+  database
+    .prepare(
+      `INSERT OR REPLACE INTO electorate_source (id, origin, reference, updated_at, signature)
+     VALUES (1, ?, ?, ?, ?)`,
+    )
+    .run(
+      electorateSeed.origem,
+      electorateSeed.referencia,
+      electorateSeed.atualizadoEm,
+      signature,
+    );
+  database.exec('COMMIT;');
+};
+
 const createDatabase = (): DatabaseSync => {
   const databasePath =
     process.env.DATABASE_PATH || path.join(process.cwd(), 'data', 'app.db');
@@ -59,8 +97,45 @@ const createDatabase = (): DatabaseSync => {
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
     );
+    CREATE TABLE IF NOT EXISTS signatures (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      cpf TEXT NOT NULL UNIQUE,
+      city TEXT NOT NULL,
+      voter_id TEXT,
+      receipt TEXT NOT NULL,
+      ip_hash TEXT NOT NULL,
+      user_agent TEXT NOT NULL,
+      proposal_hash TEXT NOT NULL,
+      document_hash TEXT NOT NULL,
+      consent_text TEXT NOT NULL,
+      reading_text TEXT NOT NULL,
+      prev_hash TEXT NOT NULL,
+      entry_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS signatures_city ON signatures (city);
+    CREATE TABLE IF NOT EXISTS proposal_versions (
+      hash TEXT PRIMARY KEY,
+      title TEXT NOT NULL,
+      summary TEXT NOT NULL,
+      document_url TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS municipality_electorate (
+      city TEXT PRIMARY KEY,
+      electorate INTEGER NOT NULL
+    );
+    CREATE TABLE IF NOT EXISTS electorate_source (
+      id INTEGER PRIMARY KEY CHECK (id = 1),
+      origin TEXT NOT NULL,
+      reference TEXT NOT NULL,
+      updated_at TEXT NOT NULL,
+      signature TEXT NOT NULL
+    );
   `);
   migrateRegistrationsToUniqueCpf(database);
+  syncElectorate(database);
   return database;
 };
 

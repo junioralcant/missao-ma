@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {SiteHeader} from '@/app/components/SiteHeader';
 import {
@@ -28,7 +29,12 @@ export default function AdminPage() {
       <main className="page page--wide">
         <header className="admin-header">
           <h1>Área administrativa</h1>
-          <LogoutButton />
+          <div className="row-actions">
+            <Link className="btn btn--small btn--ghost" href="/admin/pec">
+              Assinaturas da PEC
+            </Link>
+            <LogoutButton />
+          </div>
         </header>
         <section className="card">
           <h2>Grupo padrão</h2>

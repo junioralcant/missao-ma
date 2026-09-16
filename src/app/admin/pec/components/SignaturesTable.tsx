@@ -1,41 +1,39 @@
 'use client';
 
 import {useState} from 'react';
+import {ConfirmDialog} from '@/app/admin/components/ConfirmDialog';
 import {formatCpf} from '@/lib/cpf';
-import type {Registration} from '@/lib/types';
-import {ConfirmDialog} from './ConfirmDialog';
+import type {Signature} from '@/lib/types';
 
-type RegistrationsTableProps = {
-  registrations: Registration[];
+type SignaturesTableProps = {
+  signatures: Signature[];
 };
 
 const formatDateTime = (utcDateTime: string): string =>
   new Date(`${utcDateTime.replace(' ', 'T')}Z`).toLocaleString('pt-BR');
 
-export const RegistrationsTable = ({
-  registrations: initialRegistrations,
-}: RegistrationsTableProps) => {
-  const [registrations, setRegistrations] = useState(initialRegistrations);
+export const SignaturesTable = ({
+  signatures: initialSignatures,
+}: SignaturesTableProps) => {
+  const [signatures, setSignatures] = useState(initialSignatures);
   const [error, setError] = useState('');
-  const [pendingRemoval, setPendingRemoval] = useState<Registration | null>(
-    null,
-  );
+  const [pendingRemoval, setPendingRemoval] = useState<Signature | null>(null);
 
-  const handleDelete = async (registration: Registration) => {
+  const handleDelete = async (signature: Signature) => {
     setPendingRemoval(null);
     setError('');
     try {
       const response = await fetch(
-        `/api/admin/registrations/${registration.id}`,
+        `/api/admin/pec/signatures/${signature.id}`,
         {method: 'DELETE'},
       );
       if (!response.ok) {
         const data = await response.json();
-        setError(data.error ?? 'Não foi possível remover o cadastro.');
+        setError(data.error ?? 'Não foi possível remover a assinatura.');
         return;
       }
-      setRegistrations(current =>
-        current.filter(item => item.id !== registration.id),
+      setSignatures(current =>
+        current.filter(item => item.id !== signature.id),
       );
     } catch {
       setError('Falha de conexão. Tente novamente.');
@@ -46,21 +44,21 @@ export const RegistrationsTable = ({
     <div>
       {pendingRemoval ? (
         <ConfirmDialog
-          title="Remover cadastro"
-          message={`Remover o cadastro de ${pendingRemoval.name}? Esta ação não pode ser desfeita.`}
-          confirmLabel="Remover cadastro"
+          title="Remover assinatura"
+          message={`Remover a assinatura de ${pendingRemoval.name}? Esta ação não pode ser desfeita e quebra a cadeia de integridade da coleta.`}
+          confirmLabel="Remover assinatura"
           onConfirm={() => handleDelete(pendingRemoval)}
           onCancel={() => setPendingRemoval(null)}
         />
       ) : null}
       <div className="admin-header">
         <h2>
-          Cadastros <span className="gold">({registrations.length})</span>
+          Assinaturas <span className="gold">({signatures.length})</span>
         </h2>
-        {registrations.length > 0 ? (
+        {signatures.length > 0 ? (
           <a
             className="btn btn--small btn--ghost"
-            href="/api/admin/registrations?format=csv"
+            href="/api/admin/pec/signatures?format=csv"
           >
             Exportar CSV
           </a>
@@ -68,33 +66,35 @@ export const RegistrationsTable = ({
       </div>
       {error ? <div className="alert alert--error">{error}</div> : null}
       <div className="table-wrap">
-        {registrations.length === 0 ? (
-          <p className="empty">Nenhum cadastro recebido ainda.</p>
+        {signatures.length === 0 ? (
+          <p className="empty">Nenhuma assinatura registrada ainda.</p>
         ) : (
           <table>
             <thead>
               <tr>
                 <th>Nome</th>
                 <th>CPF</th>
-                <th>Cidade</th>
+                <th>Município</th>
+                <th>Protocolo</th>
                 <th>Data</th>
                 <th>Ações</th>
               </tr>
             </thead>
             <tbody>
-              {registrations.map(registration => (
-                <tr key={registration.id}>
-                  <td>{registration.name}</td>
-                  <td className="mono">{formatCpf(registration.cpf)}</td>
-                  <td>{registration.city}</td>
+              {signatures.map(signature => (
+                <tr key={signature.id}>
+                  <td>{signature.name}</td>
+                  <td className="mono">{formatCpf(signature.cpf)}</td>
+                  <td>{signature.city}</td>
+                  <td className="mono">{signature.receipt}</td>
                   <td className="mono">
-                    {formatDateTime(registration.createdAt)}
+                    {formatDateTime(signature.createdAt)}
                   </td>
                   <td>
                     <div className="row-actions">
                       <button
                         className="btn btn--small btn--danger"
-                        onClick={() => setPendingRemoval(registration)}
+                        onClick={() => setPendingRemoval(signature)}
                       >
                         Remover
                       </button>

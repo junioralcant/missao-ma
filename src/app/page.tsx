@@ -1,3 +1,4 @@
+import Link from 'next/link';
 import municipalities from '@/data/municipios-ma.json';
 import {RegistrationForm} from './components/RegistrationForm';
 import {SiteHeader} from './components/SiteHeader';
@@ -27,6 +28,11 @@ export default function HomePage() {
         <p className="footer-note">
           Seus dados (nome, CPF e cidade) são armazenados apenas para controle
           de participação nos grupos.
+        </p>
+        <p className="footer-note">
+          <Link href="/pec">
+            Assine também a proposta de emenda à Constituição do Maranhão
+          </Link>
         </p>
       </main>
     </>

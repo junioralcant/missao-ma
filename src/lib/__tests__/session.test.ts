@@ -1,4 +1,9 @@
-import {createSessionToken, isValidSessionToken} from '../session';
+import {
+  ADMIN_HOME,
+  createSessionToken,
+  isValidSessionToken,
+  sanitizeAdminRedirect,
+} from '../session';
 
 const ORIGINAL_ENV = {...process.env};
 
@@ -43,5 +48,34 @@ describe('sessão administrativa', () => {
     delete process.env.SESSION_SECRET;
     delete process.env.ADMIN_PASSWORD;
     expect(isValidSessionToken(token)).toBe(false);
+  });
+});
+
+describe('sanitizeAdminRedirect', () => {
+  it('deve preservar rotas do admin', () => {
+    expect(sanitizeAdminRedirect('/admin/pec')).toBe('/admin/pec');
+    expect(sanitizeAdminRedirect('/admin')).toBe('/admin');
+  });
+
+  it('deve cair no painel padrão quando não há destino', () => {
+    expect(sanitizeAdminRedirect(undefined)).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('')).toBe(ADMIN_HOME);
+  });
+
+  it('deve recusar redirecionamento para fora do site', () => {
+    expect(sanitizeAdminRedirect('https://evil.com')).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('//evil.com')).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('http://admin.evil.com')).toBe(ADMIN_HOME);
+  });
+
+  it('deve recusar rotas fora do admin', () => {
+    expect(sanitizeAdminRedirect('/pec')).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('/')).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('/administrativo')).toBe(ADMIN_HOME);
+  });
+
+  it('deve recusar travessia de caminho e javascript:', () => {
+    expect(sanitizeAdminRedirect('/admin/../../etc')).toBe(ADMIN_HOME);
+    expect(sanitizeAdminRedirect('javascript:alert(1)')).toBe(ADMIN_HOME);
   });
 });
