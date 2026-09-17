@@ -179,6 +179,18 @@ describe('POST /api/register', () => {
     expect(listRegistrations()).toHaveLength(0);
   });
 
+  it('deve recusar e-mail com espaço no meio', async () => {
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria silva@exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(400);
+    expect(listRegistrations()).toHaveLength(0);
+  });
+
   it('deve recusar cidade que não é município do Maranhão mesmo com grupo padrão', async () => {
     setDefaultGroupLink('https://chat.whatsapp.com/Padrao1');
 

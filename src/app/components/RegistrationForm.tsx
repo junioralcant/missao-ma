@@ -2,7 +2,7 @@
 
 import {FormEvent, useState} from 'react';
 import {findCityByName} from '@/lib/cities';
-import {isValidEmail} from '@/lib/email';
+import {MAX_EMAIL_LENGTH, isValidEmail, sanitizeEmail} from '@/lib/email';
 import {formatPhone, isValidPhone} from '@/lib/phone';
 import {CityPicker} from './CityPicker';
 
@@ -118,10 +118,14 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
           id="email"
           type="email"
           value={email}
-          onChange={event => setEmail(event.target.value)}
+          onChange={event => setEmail(sanitizeEmail(event.target.value))}
           placeholder="voce@exemplo.com"
           inputMode="email"
           autoComplete="email"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={MAX_EMAIL_LENGTH}
           required
         />
       </div>
