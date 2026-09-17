@@ -792,7 +792,7 @@ input[readonly] {
 }
 
 .document {
-  max-width: 68ch;
+  max-width: none;
 }
 
 .document-paragraph {
