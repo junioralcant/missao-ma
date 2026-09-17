@@ -1,7 +1,7 @@
 'use client';
 
 import {useState} from 'react';
-import {formatCpf} from '@/lib/cpf';
+import {formatPhone} from '@/lib/phone';
 import type {Registration} from '@/lib/types';
 import {ConfirmDialog} from './ConfirmDialog';
 
@@ -75,7 +75,8 @@ export const RegistrationsTable = ({
             <thead>
               <tr>
                 <th>Nome</th>
-                <th>CPF</th>
+                <th>WhatsApp</th>
+                <th>E-mail</th>
                 <th>Cidade</th>
                 <th>Data</th>
                 <th>Ações</th>
@@ -85,7 +86,8 @@ export const RegistrationsTable = ({
               {registrations.map(registration => (
                 <tr key={registration.id}>
                   <td>{registration.name}</td>
-                  <td className="mono">{formatCpf(registration.cpf)}</td>
+                  <td className="mono">{formatPhone(registration.whatsapp)}</td>
+                  <td>{registration.email}</td>
                   <td>{registration.city}</td>
                   <td className="mono">
                     {formatDateTime(registration.createdAt)}

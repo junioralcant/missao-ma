@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {SiteHeader} from '@/app/components/SiteHeader';
 import {
@@ -7,9 +6,9 @@ import {
   listRegistrations,
 } from '@/lib/repository';
 import {isAdminRequest} from '@/lib/session';
+import {AdminNav} from './components/AdminNav';
 import {DefaultGroupCard} from './components/DefaultGroupCard';
 import {GroupsManager} from './components/GroupsManager';
-import {LogoutButton} from './components/LogoutButton';
 import {RegistrationsTable} from './components/RegistrationsTable';
 
 export const dynamic = 'force-dynamic';
@@ -26,15 +25,10 @@ export default function AdminPage() {
   return (
     <>
       <SiteHeader label="Área administrativa" />
+      <AdminNav />
       <main className="page page--wide">
         <header className="admin-header">
           <h1>Área administrativa</h1>
-          <div className="row-actions">
-            <Link className="btn btn--small btn--ghost" href="/admin/pec">
-              Assinaturas da PEC
-            </Link>
-            <LogoutButton />
-          </div>
         </header>
         <section className="card">
           <h2>Grupo padrão</h2>

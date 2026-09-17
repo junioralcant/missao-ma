@@ -1,7 +1,6 @@
-import Link from 'next/link';
 import {redirect} from 'next/navigation';
 import {SiteHeader} from '@/app/components/SiteHeader';
-import {LogoutButton} from '@/app/admin/components/LogoutButton';
+import {AdminNav} from '@/app/admin/components/AdminNav';
 import {MunicipalityProgressTable} from '@/app/pec/components/MunicipalityProgressTable';
 import {formatNumber, formatRatio} from '@/app/pec/format';
 import {
@@ -43,15 +42,10 @@ export default function AdminPecPage() {
   return (
     <>
       <SiteHeader label="Área administrativa" />
+      <AdminNav />
       <main className="page page--wide">
         <header className="admin-header">
           <h1>Assinaturas da PEC</h1>
-          <div className="row-actions">
-            <Link className="btn btn--small btn--ghost" href="/admin">
-              Grupos de WhatsApp
-            </Link>
-            <LogoutButton />
-          </div>
         </header>
 
         <section className="card">

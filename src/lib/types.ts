@@ -9,14 +9,16 @@ export type Group = {
 export type Registration = {
   id: number;
   name: string;
-  cpf: string;
+  whatsapp: string;
+  email: string;
   city: string;
   createdAt: string;
 };
 
 export type RegistrationInput = {
   name: string;
-  cpf: string;
+  whatsapp: string;
+  email: string;
   city: string;
 };
 

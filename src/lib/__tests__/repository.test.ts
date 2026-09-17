@@ -7,7 +7,7 @@ import {
   getDefaultGroupLink,
   getGroupByCity,
   getGroupById,
-  getRegistrationByCpf,
+  getRegistrationByWhatsapp,
   listGroups,
   listRegistrations,
   setDefaultGroupLink,
@@ -83,43 +83,50 @@ describe('repository', () => {
     it('deve inserir cadastro novo', () => {
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'São Luís',
       });
 
       const registrations = listRegistrations();
       expect(registrations).toHaveLength(1);
       expect(registrations[0].name).toBe('Maria Silva');
-      expect(registrations[0].cpf).toBe('52998224725');
+      expect(registrations[0].whatsapp).toBe('98999887766');
+      expect(registrations[0].email).toBe('maria@exemplo.com');
       expect(registrations[0].city).toBe('São Luís');
     });
 
-    it('não deve duplicar mesmo CPF na mesma cidade, apenas atualizar o nome', () => {
+    it('não deve duplicar mesmo WhatsApp na mesma cidade, apenas atualizar nome e e-mail', () => {
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Maria S. Santos',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria.santos@exemplo.com',
         city: 'São Luís',
       });
 
       const registrations = listRegistrations();
       expect(registrations).toHaveLength(1);
       expect(registrations[0].name).toBe('Maria S. Santos');
+      expect(registrations[0].email).toBe('maria.santos@exemplo.com');
     });
 
-    it('não deve duplicar o mesmo CPF nem em cidade diferente', () => {
+    it('não deve duplicar o mesmo WhatsApp nem em cidade diferente', () => {
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'Imperatriz',
       });
 
@@ -128,21 +135,25 @@ describe('repository', () => {
       expect(registrations[0].city).toBe('São Luís');
     });
 
-    it('deve encontrar cadastro pelo CPF', () => {
+    it('deve encontrar cadastro pelo WhatsApp', () => {
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'São Luís',
       });
 
-      expect(getRegistrationByCpf('52998224725')?.name).toBe('Maria Silva');
-      expect(getRegistrationByCpf('11144477735')).toBe(null);
+      expect(getRegistrationByWhatsapp('98999887766')?.name).toBe(
+        'Maria Silva',
+      );
+      expect(getRegistrationByWhatsapp('98988776655')).toBe(null);
     });
 
     it('deve remover um cadastro e sinalizar quando nao existe', () => {
       upsertRegistration({
         name: 'Maria Silva',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
         city: 'São Luís',
       });
       const id = listRegistrations()[0].id;
@@ -155,12 +166,14 @@ describe('repository', () => {
     it('deve listar cadastros mais recentes primeiro', () => {
       upsertRegistration({
         name: 'Primeira Pessoa',
-        cpf: '52998224725',
+        whatsapp: '98999887766',
+        email: 'primeira@exemplo.com',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Segunda Pessoa',
-        cpf: '11144477735',
+        whatsapp: '98988776655',
+        email: 'segunda@exemplo.com',
         city: 'São Luís',
       });
 

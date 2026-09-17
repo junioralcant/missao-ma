@@ -2,7 +2,8 @@
 
 import {FormEvent, useState} from 'react';
 import {findCityByName} from '@/lib/cities';
-import {formatCpf, isValidCpf} from '@/lib/cpf';
+import {isValidEmail} from '@/lib/email';
+import {formatPhone, isValidPhone} from '@/lib/phone';
 import {CityPicker} from './CityPicker';
 
 type RegistrationFormProps = {
@@ -11,7 +12,8 @@ type RegistrationFormProps = {
 
 export const RegistrationForm = ({cities}: RegistrationFormProps) => {
   const [name, setName] = useState('');
-  const [cpf, setCpf] = useState('');
+  const [whatsapp, setWhatsapp] = useState('');
+  const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
@@ -23,8 +25,13 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
     event.preventDefault();
     setError('');
 
-    if (!isValidCpf(cpf)) {
-      setError('CPF inválido. Confira os números digitados.');
+    if (!isValidPhone(whatsapp)) {
+      setError('Número de WhatsApp inválido. Informe o DDD e os 9 dígitos.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('E-mail inválido. Confira o endereço digitado.');
       return;
     }
 
@@ -39,7 +46,7 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name, cpf, city: selectedCity}),
+        body: JSON.stringify({name, whatsapp, email, city: selectedCity}),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -92,21 +99,35 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
         />
       </div>
       <div className="field">
-        <label htmlFor="cpf">CPF</label>
+        <label htmlFor="whatsapp">Número do WhatsApp</label>
         <input
-          id="cpf"
+          id="whatsapp"
           className="input-mono"
-          value={formatCpf(cpf)}
-          onChange={event => setCpf(event.target.value)}
-          placeholder="000.000.000-00"
+          value={formatPhone(whatsapp)}
+          onChange={event => setWhatsapp(event.target.value)}
+          placeholder="(98) 99999-9999"
           inputMode="numeric"
-          maxLength={14}
+          autoComplete="tel-national"
+          maxLength={15}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="email">E-mail</label>
+        <input
+          id="email"
+          type="email"
+          value={email}
+          onChange={event => setEmail(event.target.value)}
+          placeholder="voce@exemplo.com"
+          inputMode="email"
+          autoComplete="email"
           required
         />
       </div>
       <CityPicker
         id="city"
-        label="Cidade"
+        label="Cidade de atuação"
         cities={cities}
         value={city}
         onChange={setCity}
@@ -124,8 +145,9 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
           ✓
         </span>
         <span>
-          Autorizo o armazenamento do meu nome, CPF e cidade para controle de
-          participação nos grupos de WhatsApp.
+          Autorizo o armazenamento do meu nome, número de WhatsApp, e-mail e
+          cidade de atuação para controle de participação nos grupos de
+          WhatsApp.
         </span>
       </label>
       <button className="btn" type="submit" disabled={isSubmitting || !consent}>

@@ -26,7 +26,8 @@ describe('POST /api/register', () => {
   it('deve cadastrar e devolver o link do grupo da cidade', async () => {
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '529.982.247-25',
+      whatsapp: '(98) 99988-7766',
+      email: 'Maria.Silva@Exemplo.com',
       city: 'São Luís',
     });
 
@@ -37,7 +38,8 @@ describe('POST /api/register', () => {
 
     const registrations = listRegistrations();
     expect(registrations).toHaveLength(1);
-    expect(registrations[0].cpf).toBe('52998224725');
+    expect(registrations[0].whatsapp).toBe('98999887766');
+    expect(registrations[0].email).toBe('maria.silva@exemplo.com');
   });
 
   it('deve usar o grupo padrão quando a cidade não tem grupo próprio', async () => {
@@ -45,7 +47,8 @@ describe('POST /api/register', () => {
 
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'Caxias',
     });
 
@@ -64,7 +67,8 @@ describe('POST /api/register', () => {
 
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
 
@@ -74,33 +78,40 @@ describe('POST /api/register', () => {
     });
   });
 
-  it('não deve duplicar cadastro do mesmo CPF na mesma cidade', async () => {
+  it('não deve duplicar cadastro do mesmo WhatsApp na mesma cidade', async () => {
     await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
     const response = await postRegister({
       name: 'Maria S. Santos',
-      cpf: '529.982.247-25',
+      whatsapp: '(98) 99988-7766',
+      email: 'maria.santos@exemplo.com',
       city: 'São Luís',
     });
 
     expect(response.status).toBe(200);
-    expect(listRegistrations()).toHaveLength(1);
+    const registrations = listRegistrations();
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].name).toBe('Maria S. Santos');
+    expect(registrations[0].email).toBe('maria.santos@exemplo.com');
   });
 
-  it('deve recusar CPF já cadastrado em outra cidade', async () => {
+  it('deve recusar WhatsApp já cadastrado em outra cidade', async () => {
     setDefaultGroupLink('https://chat.whatsapp.com/Padrao1');
     await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
 
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '529.982.247-25',
+      whatsapp: '+55 (98) 99988-7766',
+      email: 'maria@exemplo.com',
       city: 'Caxias',
     });
 
@@ -110,16 +121,18 @@ describe('POST /api/register', () => {
     expect(registrations[0].city).toBe('São Luís');
   });
 
-  it('deve devolver o link novamente para CPF já cadastrado na mesma cidade', async () => {
+  it('deve devolver o link novamente para WhatsApp já cadastrado na mesma cidade', async () => {
     await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
 
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
 
@@ -133,7 +146,8 @@ describe('POST /api/register', () => {
   it('deve recusar nome muito curto', async () => {
     const response = await postRegister({
       name: 'Ma',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'São Luís',
     });
 
@@ -141,10 +155,23 @@ describe('POST /api/register', () => {
     expect(listRegistrations()).toHaveLength(0);
   });
 
-  it('deve recusar CPF inválido', async () => {
+  it('deve recusar WhatsApp inválido', async () => {
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '111.111.111-11',
+      whatsapp: '(98) 3221-4455',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(400);
+    expect(listRegistrations()).toHaveLength(0);
+  });
+
+  it('deve recusar e-mail inválido', async () => {
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo',
       city: 'São Luís',
     });
 
@@ -157,7 +184,8 @@ describe('POST /api/register', () => {
 
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'Gotham',
     });
 
@@ -168,7 +196,8 @@ describe('POST /api/register', () => {
   it('deve recusar cidade sem grupo quando não há grupo padrão', async () => {
     const response = await postRegister({
       name: 'Maria Silva',
-      cpf: '52998224725',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
       city: 'Caxias',
     });
 

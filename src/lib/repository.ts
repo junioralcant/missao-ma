@@ -22,7 +22,8 @@ type GroupRow = {
 type RegistrationRow = {
   id: number;
   name: string;
-  cpf: string;
+  whatsapp: string | null;
+  email: string | null;
   city: string;
   created_at: string;
 };
@@ -38,7 +39,8 @@ const toGroup = (row: GroupRow): Group => ({
 const toRegistration = (row: RegistrationRow): Registration => ({
   id: row.id,
   name: row.name,
-  cpf: row.cpf,
+  whatsapp: row.whatsapp ?? '',
+  email: row.email ?? '',
   city: row.city,
   createdAt: row.created_at,
 });
@@ -90,17 +92,19 @@ export const deleteGroup = (id: number): boolean =>
 export const upsertRegistration = (input: RegistrationInput): void => {
   getDb()
     .prepare(
-      `INSERT INTO registrations (name, cpf, city) VALUES (?, ?, ?)
-     ON CONFLICT (cpf)
-     DO UPDATE SET name = excluded.name, created_at = datetime('now')`,
+      `INSERT INTO registrations (name, whatsapp, email, city) VALUES (?, ?, ?, ?)
+     ON CONFLICT (whatsapp)
+     DO UPDATE SET name = excluded.name, email = excluded.email, created_at = datetime('now')`,
     )
-    .run(input.name, input.cpf, input.city);
+    .run(input.name, input.whatsapp, input.email, input.city);
 };
 
-export const getRegistrationByCpf = (cpf: string): Registration | null => {
+export const getRegistrationByWhatsapp = (
+  whatsapp: string,
+): Registration | null => {
   const row = getDb()
-    .prepare('SELECT * FROM registrations WHERE cpf = ?')
-    .get(cpf) as unknown as RegistrationRow | undefined;
+    .prepare('SELECT * FROM registrations WHERE whatsapp = ?')
+    .get(whatsapp) as unknown as RegistrationRow | undefined;
   return row ? toRegistration(row) : null;
 };
 

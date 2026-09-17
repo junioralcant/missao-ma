@@ -4,33 +4,41 @@ import path from 'path';
 import {DatabaseSync} from 'node:sqlite';
 import electorateSeed from '@/data/eleitorado-ma.json';
 
-const LEGACY_REGISTRATIONS_UNIQUE = 'UNIQUE (cpf, city)';
+const LEGACY_REGISTRATIONS_COLUMN = 'cpf';
+
+const LEGACY_REGISTRATIONS_TABLE = 'registrations_legacy_cpf';
 
 const BUSY_TIMEOUT_MS = 5000;
 
-const migrateRegistrationsToUniqueCpf = (database: DatabaseSync): void => {
+const REGISTRATIONS_TABLE_SCHEMA = `
+  CREATE TABLE IF NOT EXISTS registrations (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    name TEXT NOT NULL,
+    whatsapp TEXT UNIQUE,
+    email TEXT,
+    city TEXT NOT NULL,
+    created_at TEXT NOT NULL DEFAULT (datetime('now'))
+  );
+`;
+
+const migrateLegacyCpfRegistrations = (database: DatabaseSync): void => {
   const table = database
     .prepare(
       "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'registrations'",
     )
     .get() as unknown as {sql: string} | undefined;
-  if (!table || !table.sql.includes(LEGACY_REGISTRATIONS_UNIQUE)) {
+  if (!table || !table.sql.includes(LEGACY_REGISTRATIONS_COLUMN)) {
     return;
   }
   database.exec(`
     BEGIN;
-    CREATE TABLE registrations_migrated (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      cpf TEXT NOT NULL UNIQUE,
-      city TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
-    INSERT INTO registrations_migrated (id, name, cpf, city, created_at)
-      SELECT id, name, cpf, city, created_at FROM registrations
-      WHERE id IN (SELECT MAX(id) FROM registrations GROUP BY cpf);
-    DROP TABLE registrations;
-    ALTER TABLE registrations_migrated RENAME TO registrations;
+    DROP TABLE IF EXISTS ${LEGACY_REGISTRATIONS_TABLE};
+    ALTER TABLE registrations RENAME TO ${LEGACY_REGISTRATIONS_TABLE};
+    ${REGISTRATIONS_TABLE_SCHEMA}
+    INSERT INTO registrations (id, name, whatsapp, email, city, created_at)
+      SELECT id, name, NULL, NULL, city, created_at
+      FROM ${LEGACY_REGISTRATIONS_TABLE}
+      WHERE id IN (SELECT MAX(id) FROM ${LEGACY_REGISTRATIONS_TABLE} GROUP BY cpf);
     COMMIT;
   `);
 };
@@ -78,6 +86,7 @@ const createDatabase = (): DatabaseSync => {
   const database = new DatabaseSync(databasePath);
   database.exec(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS};`);
   database.exec('PRAGMA journal_mode = WAL;');
+  migrateLegacyCpfRegistrations(database);
   database.exec(`
     CREATE TABLE IF NOT EXISTS groups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -86,13 +95,7 @@ const createDatabase = (): DatabaseSync => {
       created_at TEXT NOT NULL DEFAULT (datetime('now')),
       updated_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
-    CREATE TABLE IF NOT EXISTS registrations (
-      id INTEGER PRIMARY KEY AUTOINCREMENT,
-      name TEXT NOT NULL,
-      cpf TEXT NOT NULL UNIQUE,
-      city TEXT NOT NULL,
-      created_at TEXT NOT NULL DEFAULT (datetime('now'))
-    );
+    ${REGISTRATIONS_TABLE_SCHEMA}
     CREATE TABLE IF NOT EXISTS settings (
       key TEXT PRIMARY KEY,
       value TEXT NOT NULL
@@ -134,7 +137,6 @@ const createDatabase = (): DatabaseSync => {
       signature TEXT NOT NULL
     );
   `);
-  migrateRegistrationsToUniqueCpf(database);
   syncElectorate(database);
   return database;
 };

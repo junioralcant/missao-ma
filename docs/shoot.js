@@ -27,7 +27,8 @@ const shot = async (page, name, opts = {}) => {
   await shot(m, "01-publica-inicial");
 
   await m.fill("#name", "Maria dos Santos Silva");
-  await m.fill("#cpf", "10433218100");
+  await m.fill("#whatsapp", "98991234567");
+  await m.fill("#email", "maria.santos@exemplo.com");
   await shot(m, "02-publica-preenchida");
 
   await m.click("#city");

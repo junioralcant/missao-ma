@@ -36,11 +36,11 @@ A senha do admin fica em `.env.local` (`ADMIN_PASSWORD`). Troque antes de public
 
 ### Página pública (`/`)
 
-- Formulário com nome completo, CPF (com máscara e validação de dígitos verificadores) e cidade.
+- Formulário com nome completo, número do WhatsApp (com máscara e validação de DDD + nono dígito), e-mail e cidade de atuação.
 - O select lista todos os 217 municípios do Maranhão. Se a cidade tem grupo próprio, o usuário vai para ele; senão, vai para o **grupo padrão** configurado no admin (o cadastro guarda a cidade real informada).
 - Checkbox de consentimento (LGPD) obrigatório.
 - Ao enviar, o cadastro é salvo e o usuário é redirecionado ao link do grupo. Um botão de fallback aparece caso o redirecionamento automático falhe.
-- **CPF é único no sistema**: quem já se cadastrou e tenta de novo na mesma cidade só recebe o link novamente (sem duplicar); em outra cidade, o cadastro é recusado ("Este CPF já está cadastrado.").
+- **O número do WhatsApp é único no sistema**: quem já se cadastrou e tenta de novo na mesma cidade só recebe o link novamente (nome e e-mail são atualizados, sem duplicar); em outra cidade, o cadastro é recusado ("Este número de WhatsApp já está cadastrado.").
 
 ### Área administrativa (`/admin`)
 
@@ -48,7 +48,7 @@ A senha do admin fica em `.env.local` (`ADMIN_PASSWORD`). Troque antes de public
 - Cadastro de grupo: cidade (autocomplete com os 217 municípios oficiais do MA, lista do IBGE em `src/data/municipios-ma.json`) + link de convite (normalizado para `https://chat.whatsapp.com/<código>`; aceita colar o link com `?mode=...` que o WhatsApp gera).
 - **Grupo padrão**: link usado quando a cidade escolhida ainda não tem grupo próprio (editável/removível no topo do painel).
 - Edição e remoção de links existentes.
-- Tabela com todos os cadastros recebidos (nome, CPF, cidade, data) e exportação em CSV.
+- Tabela com todos os cadastros recebidos (nome, WhatsApp, e-mail, cidade, data) e exportação em CSV.
 
 ## Plataforma 2 — Assinatura da PEC
 
@@ -165,7 +165,8 @@ src/
 ├── data/municipios-ma.json            # 217 municípios do MA (IBGE)
 ├── data/eleitorado-ma.json            # eleitorado por município (sincronizado no boot)
 ├── data/minuta-pec.json               # texto e hash da minuta (gerado pelo importador)
-└── lib/                               # db, repository, cpf, session, validation, types,
+└── lib/                               # db, repository, phone, email, cpf, session,
+                                       # validation, types,
                                        # pec (metas), electorate (import), signature,
                                        # proposal, consent, document, integrity
 ```
@@ -185,7 +186,7 @@ npm test
 
 Suíte Jest (preset `next/jest`), sem mocks de código próprio:
 
-- `src/lib/__tests__/` — unitários de `cpf` (máscara + dígitos verificadores), `validation` (municípios do MA + formato do link), `session` (assinatura HMAC do cookie) e `repository` (CRUD real contra SQLite em memória, via `DATABASE_PATH=':memory:'` no `jest.setup.js`)
+- `src/lib/__tests__/` — unitários de `phone` (máscara + DDD e nono dígito), `email` (formato do endereço), `cpf` (máscara + dígitos verificadores, usado na PEC), `validation` (municípios do MA + formato do link), `session` (assinatura HMAC do cookie) e `repository` (CRUD real contra SQLite em memória, via `DATABASE_PATH=':memory:'` no `jest.setup.js`)
 - `src/app/api/register/__tests__/` — a rota pública inteira com `Request` real e banco em memória (cadastro, dedup, validações e body malformado)
 - `src/lib/__tests__/pec.test.ts` — as três metas (2%, 18%, 0,3%), qualificação por município e a distinção entre meta atingida e proposta apta a protocolo
 - `src/lib/__tests__/signature.test.ts` — protocolo determinístico sem expor CPF e hash do IP
@@ -243,14 +244,15 @@ Se os dois divergirem, o apex está quebrado — sintoma: `curl https://missaoma
 
 ### Cuidados
 
-- **Backup**: o volume guarda CPFs. Configure backup do volume no Railway ou exporte o CSV periodicamente.
+- **Backup**: o volume guarda dados pessoais (WhatsApp e e-mail nos grupos, CPF na PEC). Configure backup do volume no Railway ou exporte o CSV periodicamente.
 - **Não versionar** `data/` nem `.env.local` — já cobertos pelo `.gitignore`.
+- **Migração dos cadastros antigos**: no primeiro boot após a troca de CPF por WhatsApp + e-mail, a tabela `registrations` antiga é renomeada para `registrations_legacy_cpf` e os cadastros são copiados para a tabela nova com WhatsApp e e-mail em branco — eles continuam aparecendo no painel e no CSV. Nada é apagado: a tabela arquivada guarda os dados originais, inclusive o CPF. Se quiser descartar os CPFs por minimização (LGPD), basta `DROP TABLE registrations_legacy_cpf` depois de conferir a migração.
 - O eleitorado é sincronizado do `src/data/eleitorado-ma.json` a cada boot em que o arquivo mudar; ajustes manuais na tabela `municipality_electorate` são sobrescritos no próximo deploy.
 - Um `next build` **não** deve abrir o banco: a conexão é lazy (`getDb()`) justamente porque o build importa as rotas em processos paralelos e o SQLite trava com escrita concorrente.
 
 ## LGPD
 
-O sistema coleta CPF (dado pessoal). Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
+O sistema coleta dados pessoais: nome, WhatsApp, e-mail e cidade de atuação nos grupos; nome, CPF e município na PEC. Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
 
 Na assinatura da PEC, o IP é gravado apenas como hash HMAC (nunca em claro), o protocolo é derivado do CPF sem revelá-lo e o consentimento aceito fica registrado literalmente em cada assinatura. A finalidade declarada é instruir o protocolo da proposta na Assembleia Legislativa — não reutilize a base para outro fim.
 

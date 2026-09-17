@@ -1,9 +1,10 @@
 import {NextResponse} from 'next/server';
-import {isValidCpf, normalizeCpf} from '@/lib/cpf';
+import {isValidEmail, normalizeEmail} from '@/lib/email';
+import {isValidPhone, normalizePhone} from '@/lib/phone';
 import {
   getDefaultGroupLink,
   getGroupByCity,
-  getRegistrationByCpf,
+  getRegistrationByWhatsapp,
   upsertRegistration,
 } from '@/lib/repository';
 import {MIN_NAME_LENGTH, isMaranhaoMunicipality} from '@/lib/validation';
@@ -11,7 +12,12 @@ import {MIN_NAME_LENGTH, isMaranhaoMunicipality} from '@/lib/validation';
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
-  const cpf = normalizeCpf(typeof body?.cpf === 'string' ? body.cpf : '');
+  const whatsapp = normalizePhone(
+    typeof body?.whatsapp === 'string' ? body.whatsapp : '',
+  );
+  const email = normalizeEmail(
+    typeof body?.email === 'string' ? body.email : '',
+  );
   const city = typeof body?.city === 'string' ? body.city.trim() : '';
 
   if (name.length < MIN_NAME_LENGTH) {
@@ -20,8 +26,14 @@ export async function POST(request: Request) {
       {status: 400},
     );
   }
-  if (!isValidCpf(cpf)) {
-    return NextResponse.json({error: 'CPF inválido.'}, {status: 400});
+  if (!isValidPhone(whatsapp)) {
+    return NextResponse.json(
+      {error: 'Informe um número de WhatsApp válido com DDD.'},
+      {status: 400},
+    );
+  }
+  if (!isValidEmail(email)) {
+    return NextResponse.json({error: 'E-mail inválido.'}, {status: 400});
   }
   if (!isMaranhaoMunicipality(city)) {
     return NextResponse.json(
@@ -30,10 +42,10 @@ export async function POST(request: Request) {
     );
   }
 
-  const existingRegistration = getRegistrationByCpf(cpf);
+  const existingRegistration = getRegistrationByWhatsapp(whatsapp);
   if (existingRegistration && existingRegistration.city !== city) {
     return NextResponse.json(
-      {error: 'Este CPF já está cadastrado.'},
+      {error: 'Este número de WhatsApp já está cadastrado.'},
       {status: 409},
     );
   }
@@ -47,6 +59,6 @@ export async function POST(request: Request) {
     );
   }
 
-  upsertRegistration({name, cpf, city});
+  upsertRegistration({name, whatsapp, email, city});
   return NextResponse.json({whatsappLink});
 }

@@ -1,5 +1,5 @@
 import {NextResponse} from 'next/server';
-import {formatCpf} from '@/lib/cpf';
+import {formatPhone} from '@/lib/phone';
 import {listRegistrations} from '@/lib/repository';
 import {isAdminRequest} from '@/lib/session';
 
@@ -21,12 +21,14 @@ export async function GET(request: Request) {
   const rows = registrations.map(registration =>
     [
       escapeCsvField(registration.name),
-      formatCpf(registration.cpf),
+      formatPhone(registration.whatsapp),
+      escapeCsvField(registration.email),
       escapeCsvField(registration.city),
       registration.createdAt,
     ].join(';'),
   );
-  const csv = '\ufeff' + `Nome;CPF;Cidade;Data (UTC)\n${rows.join('\n')}\n`;
+  const csv =
+    '\ufeff' + `Nome;WhatsApp;E-mail;Cidade;Data (UTC)\n${rows.join('\n')}\n`;
 
   return new NextResponse(csv, {
     headers: {
