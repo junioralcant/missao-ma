@@ -202,7 +202,7 @@ Suíte Jest (preset `next/jest`), sem mocks de código próprio:
 
 ## Deploy
 
-Em produção no Railway: **https://web-production-9572a.up.railway.app**
+Em produção: **https://www.missaoma.com.br** (Railway, `web-production-9572a.up.railway.app`)
 
 O banco é um arquivo SQLite, então o serviço precisa de **disco persistente** e **uma única réplica** (Vercel e outras plataformas serverless não servem sem trocar para Postgres).
 
@@ -217,6 +217,29 @@ Configuração do serviço no Railway:
 | Build / start   | `npm run build` / `npm start` (o `next start` respeita `PORT`) |
 
 Deploys a partir do `main` são automáticos (repo conectado). O primeiro acesso ao banco cria o arquivo e as tabelas no volume.
+
+### Domínio e DNS
+
+O endereço canônico é **`www.missaoma.com.br`** — é o que está impresso no manual de uso. O apex (`missaoma.com.br`, sem www) não serve o site: redireciona 308 para o www, regra que vive no `next.config.mjs` e roda no próprio app.
+
+Os dois hosts são custom domains do serviço `web` no Railway, e **cada um recebe um alvo próprio**:
+
+| Host                  | Registro | Valor                                     |
+| --------------------- | -------- | ----------------------------------------- |
+| `www.missaoma.com.br` | CNAME    | `k2ozjlus.up.railway.app.`                |
+| `missaoma.com.br`     | A        | IP de `zbnfldar.up.railway.app` (`69.46.46.80`) |
+| `_railway-verify`     | TXT      | `railway-verify=6a7fa9e765d7f7ecce4fb56f6464c59ac8b578e72339f7dbbe47b86ef81f5e1f` |
+
+O apex usa **A** porque CNAME na raiz da zona é proibido pela RFC 1034 e o DNS da HostGator (dns3/dns4.hostgator.com.br) não faz CNAME flattening. O Railway **não promete IP estático**, então esse A é uma aposta consciente: mantenha o **TTL em 300s** para conseguir corrigir rápido se o IP mudar. O TXT `_railway-verify` é o que prova a propriedade e libera o certificado — sem ele o apex não ganha TLS.
+
+Para reconferir o IP atual do apex a qualquer momento:
+
+```bash
+dig +short zbnfldar.up.railway.app A   # alvo que o A do apex deve seguir
+dig +short missaoma.com.br A           # o que o apex realmente aponta
+```
+
+Se os dois divergirem, o apex está quebrado — sintoma: `curl https://missaoma.com.br/` dá timeout enquanto o www responde 200. Migrar o DNS para um provedor com CNAME flattening (Cloudflare) elimina essa classe de problema.
 
 ### Cuidados
 
