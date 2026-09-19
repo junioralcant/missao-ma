@@ -47,6 +47,8 @@ A senha do admin fica em `.env.local` (`ADMIN_PASSWORD`). Troque antes de public
 - Login por senha (`ADMIN_PASSWORD`), sessão via cookie assinado (HMAC com `SESSION_SECRET`).
 - Cadastro de grupo: cidade (autocomplete com os 217 municípios oficiais do MA, lista do IBGE em `src/data/municipios-ma.json`) + link de convite (normalizado para `https://chat.whatsapp.com/<código>`; aceita colar o link com `?mode=...` que o WhatsApp gera).
 - **Grupo padrão**: link usado quando a cidade escolhida ainda não tem grupo próprio (editável/removível no topo do painel).
+- **Cobertura dos 217 municípios**: contador `X de 217` com quantos ainda faltam e barra de progresso, alimentado por `src/lib/coverage.ts`.
+- A tabela lista **todos os 217 municípios** (não só os que já têm grupo), com busca por nome e filtros `Todos` / `Com grupo` / `Sem grupo`. Município sem grupo traz o botão **Cadastrar**, que já preenche a cidade no formulário e leva o cursor para o campo do link.
 - Edição e remoção de links existentes.
 - Tabela com todos os cadastros recebidos (nome, WhatsApp, e-mail, cidade, data) e exportação em CSV.
 
@@ -166,7 +168,7 @@ src/
 ├── data/eleitorado-ma.json            # eleitorado por município (sincronizado no boot)
 ├── data/minuta-pec.json               # texto e hash da minuta (gerado pelo importador)
 └── lib/                               # db, repository, phone, email, cpf, session,
-                                       # validation, types,
+                                       # validation, types, coverage (grupos por município),
                                        # pec (metas), electorate (import), signature,
                                        # proposal, consent, document, integrity
 ```
@@ -186,7 +188,7 @@ npm test
 
 Suíte Jest (preset `next/jest`), sem mocks de código próprio:
 
-- `src/lib/__tests__/` — unitários de `phone` (máscara + DDD e nono dígito), `email` (formato do endereço), `cpf` (máscara + dígitos verificadores, usado na PEC), `validation` (municípios do MA + formato do link), `session` (assinatura HMAC do cookie) e `repository` (CRUD real contra SQLite em memória, via `DATABASE_PATH=':memory:'` no `jest.setup.js`)
+- `src/lib/__tests__/` — unitários de `phone` (máscara + DDD e nono dígito), `email` (formato do endereço), `cpf` (máscara + dígitos verificadores, usado na PEC), `validation` (municípios do MA + formato do link), `session` (assinatura HMAC do cookie), `coverage` (cobertura dos 217 municípios: contagem, faltantes e casamento de cidade sem acento) e `repository` (CRUD real contra SQLite em memória, via `DATABASE_PATH=':memory:'` no `jest.setup.js`)
 - `src/app/api/register/__tests__/` — a rota pública inteira com `Request` real e banco em memória (cadastro, dedup, validações e body malformado)
 - `src/lib/__tests__/pec.test.ts` — as três metas (2%, 18%, 0,3%), qualificação por município e a distinção entre meta atingida e proposta apta a protocolo
 - `src/lib/__tests__/signature.test.ts` — protocolo determinístico sem expor CPF e hash do IP

@@ -147,3 +147,16 @@ export type ProposalDocument = {
   paragraphs: string[];
   importedAt: string;
 };
+
+export type GroupCoverageCity = {
+  city: string;
+  group: Group | null;
+};
+
+export type GroupCoverage = {
+  total: number;
+  covered: number;
+  missing: number;
+  ratio: number;
+  cities: GroupCoverageCity[];
+};

@@ -729,6 +729,10 @@ td input {
   margin-bottom: 4px;
 }
 
+.coverage-meter {
+  margin-bottom: 20px;
+}
+
 .filter-bar {
   display: flex;
   flex-wrap: wrap;

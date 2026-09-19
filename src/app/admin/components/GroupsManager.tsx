@@ -1,14 +1,40 @@
 'use client';
 
-import {FormEvent, useState} from 'react';
+import {FormEvent, useMemo, useRef, useState} from 'react';
 import {CityPicker} from '@/app/components/CityPicker';
 import municipalities from '@/data/municipios-ma.json';
 import {findCityByName} from '@/lib/cities';
-import type {Group} from '@/lib/types';
+import {buildGroupCoverage} from '@/lib/coverage';
+import {normalizeSearchText} from '@/lib/text';
+import type {Group, GroupCoverageCity} from '@/lib/types';
 import {ConfirmDialog} from './ConfirmDialog';
+import {GroupCoverageMeter} from './GroupCoverageMeter';
 
 type GroupsManagerProps = {
   initialGroups: Group[];
+};
+
+type CoverageFilter = 'todos' | 'com-grupo' | 'sem-grupo';
+
+const FILTER_LABELS: Record<CoverageFilter, string> = {
+  todos: 'Todos',
+  'com-grupo': 'Com grupo',
+  'sem-grupo': 'Sem grupo',
+};
+
+const FILTER_ORDER: CoverageFilter[] = ['todos', 'com-grupo', 'sem-grupo'];
+
+const matchesFilter = (
+  item: GroupCoverageCity,
+  filter: CoverageFilter,
+): boolean => {
+  if (filter === 'com-grupo') {
+    return Boolean(item.group);
+  }
+  if (filter === 'sem-grupo') {
+    return !item.group;
+  }
+  return true;
 };
 
 export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
@@ -20,9 +46,24 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingRemoval, setPendingRemoval] = useState<Group | null>(null);
+  const [query, setQuery] = useState('');
+  const [filter, setFilter] = useState<CoverageFilter>('todos');
+  const linkInputRef = useRef<HTMLInputElement>(null);
 
-  const sortByCity = (list: Group[]) =>
-    [...list].sort((a, b) => a.city.localeCompare(b.city, 'pt-BR'));
+  const coverage = useMemo(
+    () => buildGroupCoverage(municipalities as string[], groups),
+    [groups],
+  );
+
+  const visibleCities = useMemo(() => {
+    const normalizedQuery = normalizeSearchText(query.trim());
+    return coverage.cities.filter(
+      item =>
+        matchesFilter(item, filter) &&
+        (!normalizedQuery ||
+          normalizeSearchText(item.city).includes(normalizedQuery)),
+    );
+  }, [coverage, filter, query]);
 
   const handleCreate = async (event: FormEvent) => {
     event.preventDefault();
@@ -44,7 +85,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
         setError(data.error ?? 'Não foi possível cadastrar o grupo.');
         return;
       }
-      setGroups(current => sortByCity([...current, data.group]));
+      setGroups(current => [...current, data.group]);
       setCity('');
       setWhatsappLink('');
     } catch {
@@ -52,6 +93,14 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleStartCreate = (selectedCity: string) => {
+    setError('');
+    setEditingId(null);
+    setCity(selectedCity);
+    setWhatsappLink('');
+    linkInputRef.current?.focus();
   };
 
   const handleStartEdit = (group: Group) => {
@@ -111,6 +160,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
           onCancel={() => setPendingRemoval(null)}
         />
       ) : null}
+      <GroupCoverageMeter coverage={coverage} />
       {error ? <div className="alert alert--error">{error}</div> : null}
       <form className="inline-form" onSubmit={handleCreate}>
         <CityPicker
@@ -125,6 +175,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
           <label htmlFor="group-link">Link do grupo</label>
           <input
             id="group-link"
+            ref={linkInputRef}
             className="input-mono"
             value={whatsappLink}
             onChange={event => setWhatsappLink(event.target.value)}
@@ -140,24 +191,64 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
           {isSubmitting ? 'Salvando…' : 'Cadastrar'}
         </button>
       </form>
-      <div className="table-wrap" style={{marginTop: 20}}>
-        {groups.length === 0 ? (
-          <p className="empty">Nenhum grupo cadastrado ainda.</p>
-        ) : (
-          <table>
-            <thead>
+
+      <div className="filter-bar" style={{marginTop: 20}}>
+        <input
+          className="filter-input"
+          value={query}
+          onChange={event => setQuery(event.target.value)}
+          placeholder="Buscar município"
+          aria-label="Buscar município"
+        />
+        <div className="filter-chips" role="group" aria-label="Filtrar cidades">
+          {FILTER_ORDER.map(option => (
+            <button
+              key={option}
+              type="button"
+              className={option === filter ? 'chip chip--active' : 'chip'}
+              onClick={() => setFilter(option)}
+              aria-pressed={option === filter}
+            >
+              {FILTER_LABELS[option]}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <p className="muted">
+        {visibleCities.length} de {coverage.total} municípios
+      </p>
+
+      <div className="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Cidade</th>
+              <th>Link</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody>
+            {visibleCities.length === 0 ? (
               <tr>
-                <th>Cidade</th>
-                <th>Link</th>
-                <th>Ações</th>
+                <td colSpan={3} className="muted">
+                  Nenhum município encontrado.
+                </td>
               </tr>
-            </thead>
-            <tbody>
-              {groups.map(group => (
-                <tr key={group.id}>
-                  <td>{group.city}</td>
+            ) : (
+              visibleCities.map(({city: cityName, group}) => (
+                <tr key={cityName}>
+                  <td>
+                    <span
+                      className={group ? 'dot dot--done' : 'dot'}
+                      aria-hidden="true"
+                    />
+                    {cityName}
+                  </td>
                   <td className="link-cell">
-                    {editingId === group.id ? (
+                    {!group ? (
+                      <span className="muted">Sem grupo</span>
+                    ) : editingId === group.id ? (
                       <input
                         value={editingLink}
                         onChange={event => setEditingLink(event.target.value)}
@@ -175,7 +266,14 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
                   </td>
                   <td>
                     <div className="row-actions">
-                      {editingId === group.id ? (
+                      {!group ? (
+                        <button
+                          className="btn btn--small btn--ghost"
+                          onClick={() => handleStartCreate(cityName)}
+                        >
+                          Cadastrar
+                        </button>
+                      ) : editingId === group.id ? (
                         <>
                           <button
                             className="btn btn--small"
@@ -209,10 +307,10 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
                     </div>
                   </td>
                 </tr>
-              ))}
-            </tbody>
-          </table>
-        )}
+              ))
+            )}
+          </tbody>
+        </table>
       </div>
     </div>
   );
