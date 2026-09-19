@@ -7,6 +7,7 @@ import {
   getDefaultGroupLink,
   getGroupByCity,
   getGroupById,
+  getRegistrationByEmail,
   getRegistrationByWhatsapp,
   listGroups,
   listRegistrations,
@@ -147,6 +148,39 @@ describe('repository', () => {
         'Maria Silva',
       );
       expect(getRegistrationByWhatsapp('98988776655')).toBe(null);
+    });
+
+    it('deve encontrar cadastro pelo e-mail', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
+        city: 'São Luís',
+      });
+
+      expect(getRegistrationByEmail('maria@exemplo.com')?.name).toBe(
+        'Maria Silva',
+      );
+      expect(getRegistrationByEmail('outra@exemplo.com')).toBe(null);
+    });
+
+    it('não deve aceitar o mesmo e-mail em dois cadastros', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
+        city: 'São Luís',
+      });
+
+      expect(() =>
+        upsertRegistration({
+          name: 'Joao Pedro',
+          whatsapp: '98988776655',
+          email: 'maria@exemplo.com',
+          city: 'São Luís',
+        }),
+      ).toThrow();
+      expect(listRegistrations()).toHaveLength(1);
     });
 
     it('deve remover um cadastro e sinalizar quando nao existe', () => {

@@ -8,6 +8,10 @@ const LEGACY_REGISTRATIONS_COLUMN = 'cpf';
 
 const LEGACY_REGISTRATIONS_TABLE = 'registrations_legacy_cpf';
 
+const UNIQUE_EMAIL_COLUMN = 'email TEXT UNIQUE';
+
+const DUPLICATE_EMAIL_REGISTRATIONS_TABLE = 'registrations_duplicate_email';
+
 const BUSY_TIMEOUT_MS = 5000;
 
 const REGISTRATIONS_TABLE_SCHEMA = `
@@ -15,19 +19,24 @@ const REGISTRATIONS_TABLE_SCHEMA = `
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     name TEXT NOT NULL,
     whatsapp TEXT UNIQUE,
-    email TEXT,
+    email TEXT UNIQUE,
     city TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
 `;
 
+const readRegistrationsSchema = (database: DatabaseSync): string | undefined =>
+  (
+    database
+      .prepare(
+        "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'registrations'",
+      )
+      .get() as unknown as {sql: string} | undefined
+  )?.sql;
+
 const migrateLegacyCpfRegistrations = (database: DatabaseSync): void => {
-  const table = database
-    .prepare(
-      "SELECT sql FROM sqlite_master WHERE type = 'table' AND name = 'registrations'",
-    )
-    .get() as unknown as {sql: string} | undefined;
-  if (!table || !table.sql.includes(LEGACY_REGISTRATIONS_COLUMN)) {
+  const schema = readRegistrationsSchema(database);
+  if (!schema || !schema.includes(LEGACY_REGISTRATIONS_COLUMN)) {
     return;
   }
   database.exec(`
@@ -41,6 +50,39 @@ const migrateLegacyCpfRegistrations = (database: DatabaseSync): void => {
       WHERE id IN (SELECT MAX(id) FROM ${LEGACY_REGISTRATIONS_TABLE} GROUP BY cpf);
     COMMIT;
   `);
+};
+
+const migrateDuplicateEmailRegistrations = (database: DatabaseSync): void => {
+  const schema = readRegistrationsSchema(database);
+  if (!schema || schema.includes(UNIQUE_EMAIL_COLUMN)) {
+    return;
+  }
+  database.exec(`
+    BEGIN;
+    DROP TABLE IF EXISTS ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE};
+    ALTER TABLE registrations RENAME TO ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE};
+    ${REGISTRATIONS_TABLE_SCHEMA}
+    INSERT INTO registrations (id, name, whatsapp, email, city, created_at)
+      SELECT id, name, whatsapp, NULLIF(email, ''), city, created_at
+      FROM ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE}
+      WHERE NULLIF(email, '') IS NULL
+        OR id IN (
+          SELECT MAX(id) FROM ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE}
+          WHERE NULLIF(email, '') IS NOT NULL
+          GROUP BY email
+        );
+    DELETE FROM ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE}
+      WHERE id IN (SELECT id FROM registrations);
+    COMMIT;
+  `);
+  const discarded = database
+    .prepare(
+      `SELECT COUNT(*) AS total FROM ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE}`,
+    )
+    .get() as unknown as {total: number};
+  if (Number(discarded.total) === 0) {
+    database.exec(`DROP TABLE ${DUPLICATE_EMAIL_REGISTRATIONS_TABLE};`);
+  }
 };
 
 const electorateSignature = (): string =>
@@ -87,6 +129,7 @@ const createDatabase = (): DatabaseSync => {
   database.exec(`PRAGMA busy_timeout = ${BUSY_TIMEOUT_MS};`);
   database.exec('PRAGMA journal_mode = WAL;');
   migrateLegacyCpfRegistrations(database);
+  migrateDuplicateEmailRegistrations(database);
   database.exec(`
     CREATE TABLE IF NOT EXISTS groups (
       id INTEGER PRIMARY KEY AUTOINCREMENT,

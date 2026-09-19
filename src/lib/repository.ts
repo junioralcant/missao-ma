@@ -108,6 +108,13 @@ export const getRegistrationByWhatsapp = (
   return row ? toRegistration(row) : null;
 };
 
+export const getRegistrationByEmail = (email: string): Registration | null => {
+  const row = getDb()
+    .prepare('SELECT * FROM registrations WHERE email = ?')
+    .get(email) as unknown as RegistrationRow | undefined;
+  return row ? toRegistration(row) : null;
+};
+
 export const deleteRegistration = (id: number): boolean =>
   Number(
     getDb().prepare('DELETE FROM registrations WHERE id = ?').run(id).changes,

@@ -143,6 +143,96 @@ describe('POST /api/register', () => {
     expect(listRegistrations()).toHaveLength(1);
   });
 
+  it('deve recusar e-mail já cadastrado por outro WhatsApp', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Joao Pedro',
+      whatsapp: '98988776655',
+      email: 'Maria@Exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Este e-mail já está cadastrado.',
+    });
+    const registrations = listRegistrations();
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].name).toBe('Maria Silva');
+  });
+
+  it('deve recusar e-mail já cadastrado mesmo em outra cidade', async () => {
+    setDefaultGroupLink('https://chat.whatsapp.com/Padrao1');
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Joao Pedro',
+      whatsapp: '98988776655',
+      email: 'maria@exemplo.com',
+      city: 'Caxias',
+    });
+
+    expect(response.status).toBe(409);
+    expect(listRegistrations()).toHaveLength(1);
+  });
+
+  it('deve deixar a pessoa trocar o e-mail do próprio cadastro', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria.nova@exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(200);
+    const registrations = listRegistrations();
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].email).toBe('maria.nova@exemplo.com');
+  });
+
+  it('deve liberar o e-mail antigo depois que a pessoa troca o dela', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria.nova@exemplo.com',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Joao Pedro',
+      whatsapp: '98988776655',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(200);
+    expect(listRegistrations()).toHaveLength(2);
+  });
+
   it('deve recusar nome muito curto', async () => {
     const response = await postRegister({
       name: 'Ma',

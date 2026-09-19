@@ -4,6 +4,7 @@ import {isValidPhone, normalizePhone} from '@/lib/phone';
 import {
   getDefaultGroupLink,
   getGroupByCity,
+  getRegistrationByEmail,
   getRegistrationByWhatsapp,
   upsertRegistration,
 } from '@/lib/repository';
@@ -46,6 +47,14 @@ export async function POST(request: Request) {
   if (existingRegistration && existingRegistration.city !== city) {
     return NextResponse.json(
       {error: 'Este número de WhatsApp já está cadastrado.'},
+      {status: 409},
+    );
+  }
+
+  const registrationWithEmail = getRegistrationByEmail(email);
+  if (registrationWithEmail && registrationWithEmail.whatsapp !== whatsapp) {
+    return NextResponse.json(
+      {error: 'Este e-mail já está cadastrado.'},
       {status: 409},
     );
   }
