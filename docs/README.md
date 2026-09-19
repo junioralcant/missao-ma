@@ -1,35 +1,57 @@
-# Manual de uso (PDF para o cliente)
+# Manuais de uso (PDF para o cliente)
 
-Gera o `Missao-Maranhao-Manual-de-Uso.pdf` com prints reais das telas.
+Dois documentos, gerados com prints reais das telas:
+
+| PDF                                   | Assunto                                   |
+| ------------------------------------- | ----------------------------------------- |
+| `Missao-Maranhao-Manual-de-Uso.pdf`    | Grupos de WhatsApp por cidade             |
+| `Missao-Maranhao-Manual-PEC.pdf`       | Assinatura popular da PEC 14/2026         |
 
 ## Como regerar (quando a UI mudar)
 
 ```bash
-# 1. sobe uma instância com banco de demonstração isolado
-npm run build
-DATABASE_PATH=/tmp/demo/app.db ADMIN_PASSWORD=demo123 \
-  SESSION_SECRET=demo-secret PORT=3100 npm start
+# 1. dependências dos geradores (uma vez)
+cd docs && npm install
 
-# 2. popule com dados fictícios pelo /admin (nunca use dados reais nos prints)
+# 2. sobe uma instância com banco de demonstração isolado
+DATABASE_PATH=/tmp/demo-pec/app.db ADMIN_PASSWORD=demo123 \
+  SESSION_SECRET=demo-secret npx next dev -p 3100
 
-# 3. capture as telas e gere o PDF
-cd docs
-npm install playwright
-node shoot.js   # salva em docs/shots/
-node pdf.js     # gera o PDF ao lado
+# 3a. manual dos grupos: popule os grupos pelo /admin e capture
+node shoot.js && node pdf.js
+
+# 3b. manual da PEC: semeia assinaturas fictícias, captura e gera
+node seed-pec-demo.js
+node shoot-pec.js
+node pdf-pec.js
 ```
 
 Usa o Chrome já instalado no sistema (`channel: 'chrome'`), sem baixar navegador.
 
 ## Arquivos
 
-| Arquivo       | Papel                                         |
-| ------------- | --------------------------------------------- |
-| `manual.html` | conteúdo e layout do documento (impressão A4) |
-| `shoot.js`    | navega no sistema e captura os prints         |
-| `pdf.js`      | converte o HTML em PDF com rodapé e numeração |
+| Arquivo             | Papel                                                  |
+| ------------------- | ------------------------------------------------------ |
+| `manual.html`       | conteúdo e layout do manual dos grupos (impressão A4)  |
+| `shoot.js`          | captura as telas dos grupos                            |
+| `pdf.js`            | converte `manual.html` em PDF                          |
+| `manual-pec.html`   | conteúdo e layout do manual da PEC (impressão A4)      |
+| `seed-pec-demo.js`  | cria 42 assinaturas fictícias no banco de demonstração |
+| `shoot-pec.js`      | captura as telas da PEC (público, painel e admin)      |
+| `pdf-pec.js`        | converte `manual-pec.html` em PDF                      |
 
 ## Regras
 
-- **Nunca** capturar prints com cadastros reais — CPF é dado pessoal (LGPD). Use sempre um banco de demonstração com CPFs fictícios válidos.
-- A senha do admin não entra no documento; é entregue ao cliente separadamente.
+- **Nunca** capturar prints com cadastros reais — WhatsApp, e-mail e CPF são dados pessoais
+  (LGPD). Use sempre um banco de demonstração (`DATABASE_PATH` apontando para fora do
+  repositório) com dados fictícios válidos, como faz o `seed-pec-demo.js`.
+- **Recrie o banco de demonstração antes de capturar** (`rm -rf /tmp/demo-pec`). Rodar
+  `shoot-pec.js` duas vezes sobre o mesmo banco faz a tela de sucesso virar "você já havia
+  assinado", que não é o fluxo que o manual ilustra.
+- A senha do admin não entra nos documentos; é entregue ao cliente separadamente.
+
+## Paginação
+
+Cada `<div class="page">` vira uma página A4 (269mm úteis). Se um bloco passar disso, ele
+transborda e cria uma página órfã. Ao editar o conteúdo, conferir a altura de cada bloco
+antes de gerar o PDF.

@@ -1,0 +1,8 @@
+{
+  "name": "missao-maranhao-docs",
+  "private": true,
+  "description": "Geradores dos manuais em PDF (prints reais das telas)",
+  "dependencies": {
+    "playwright": "^1.63.0"
+  }
+}

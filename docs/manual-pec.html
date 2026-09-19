@@ -1,0 +1,746 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<title>Missão Maranhão — Manual da Assinatura Popular da PEC</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fjalla+One&family=Barlow+Condensed:wght@500;600&family=Afacad:wght@400;500;600;700&family=Fragment+Mono&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink: #12181A;
+    --body: #333F43;
+    --muted: #6B7A80;
+    --gold: #C88A00;
+    --gold-bright: #FBAC1E;
+    --dark: #070D0C;
+    --line: #DFE5E7;
+    --soft: #F5F7F8;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: 'Afacad', -apple-system, sans-serif;
+    color: var(--body);
+    font-size: 11.5pt;
+    line-height: 1.5;
+  }
+  .page { page-break-after: always; padding: 4mm 0; }
+  .page:last-child { page-break-after: auto; }
+
+  /* ---------- CAPA ---------- */
+  .cover {
+    background: var(--dark);
+    color: #fff;
+    height: 247mm;
+    padding: 30mm 22mm;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    page-break-after: always;
+  }
+  .cover-mark { font-family: 'Fjalla One'; font-size: 26pt; letter-spacing: .5px; }
+  .cover-mark span { color: var(--gold-bright); }
+  .cover-eyebrow {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 12pt;
+    letter-spacing: .3em; text-transform: uppercase; color: var(--gold-bright);
+    margin-bottom: 6mm;
+  }
+  .cover h1 { font-family: 'Fjalla One'; font-size: 46pt; line-height: 1.05; font-weight: 400; }
+  .cover-sub { font-size: 14pt; color: #C9D3D6; margin-top: 6mm; max-width: 120mm; }
+  .cover-foot { font-family: 'Fragment Mono'; font-size: 9pt; color: #7E8C90; }
+  .cover-rule { width: 40mm; height: 3px; background: var(--gold-bright); margin: 8mm 0; }
+
+  /* ---------- TIPOGRAFIA ---------- */
+  h2 {
+    font-family: 'Fjalla One'; font-weight: 400; font-size: 20pt;
+    color: var(--ink); margin: 0 0 3mm;
+  }
+  h3 {
+    font-family: 'Fjalla One'; font-weight: 400; font-size: 13.5pt;
+    color: var(--ink); margin: 7mm 0 2mm;
+  }
+  .section-tag {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 10pt;
+    letter-spacing: .22em; text-transform: uppercase; color: var(--gold);
+    margin-bottom: 1.5mm;
+  }
+  p { margin-bottom: 3mm; }
+  strong { color: var(--ink); font-weight: 600; }
+  .lead { font-size: 12.5pt; color: var(--body); }
+  code {
+    font-family: 'Fragment Mono'; font-size: 9.5pt;
+    background: var(--soft); padding: 1px 4px; border-radius: 3px; color: var(--ink);
+  }
+
+  /* ---------- BLOCOS ---------- */
+  .divider { height: 1px; background: var(--line); margin: 6mm 0; }
+  .callout {
+    border-left: 3px solid var(--gold-bright);
+    background: #FFF8E9;
+    padding: 3.5mm 5mm;
+    margin: 4mm 0;
+    font-size: 11pt;
+  }
+  .callout.warn { border-left-color: #C0392B; background: #FDEDEA; }
+  .callout-title {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 10pt;
+    letter-spacing: .16em; text-transform: uppercase; color: var(--gold);
+    display: block; margin-bottom: 1mm;
+  }
+  .callout.warn .callout-title { color: #C0392B; }
+
+  .steps { counter-reset: step; }
+  .step { position: relative; padding-left: 11mm; margin-bottom: 4mm; }
+  .step::before {
+    counter-increment: step; content: counter(step);
+    position: absolute; left: 0; top: -0.5mm;
+    width: 7.5mm; height: 7.5mm; border-radius: 50%;
+    background: var(--dark); color: var(--gold-bright);
+    font-family: 'Fragment Mono'; font-size: 9.5pt;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .step-title { font-weight: 600; color: var(--ink); }
+
+  table { width: 100%; border-collapse: collapse; margin: 3mm 0; font-size: 10.5pt; }
+  th {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 9.5pt;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    text-align: left; padding: 2mm 3mm; border-bottom: 1.5px solid var(--line);
+  }
+  td { padding: 2.5mm 3mm; border-bottom: 1px solid var(--line); vertical-align: top; }
+  td:first-child { color: var(--ink); font-weight: 600; white-space: nowrap; }
+
+  /* ---------- IMAGENS ---------- */
+  figure { margin: 4mm 0; page-break-inside: avoid; }
+  figure img {
+    display: block; width: 100%;
+    border: 1px solid var(--line); border-radius: 3mm;
+  }
+  figcaption {
+    font-family: 'Barlow Condensed'; font-weight: 500; font-size: 9.5pt;
+    letter-spacing: .1em; text-transform: uppercase;
+    color: var(--muted); margin-top: 2mm; text-align: center;
+  }
+  .shots-2 { display: flex; gap: 6mm; page-break-inside: avoid; }
+  .shots-2 figure { flex: 1; margin: 3mm 0; }
+  .phone img { border-radius: 4mm; }
+</style>
+<style>
+  .kpi-grid { display: flex; gap: 4mm; margin: 4mm 0; }
+  .kpi {
+    flex: 1; border: 1px solid var(--line); border-radius: 2mm;
+    padding: 3.5mm 4mm; background: var(--soft);
+  }
+  .kpi-value {
+    font-family: 'Fjalla One'; font-size: 19pt; color: var(--ink);
+    display: block; line-height: 1.1;
+  }
+  .kpi-label {
+    font-family: 'Barlow Condensed'; font-weight: 600; font-size: 9pt;
+    letter-spacing: .14em; text-transform: uppercase; color: var(--muted);
+    display: block; margin-top: 1.5mm;
+  }
+  .checklist { list-style: none; margin: 3mm 0; }
+  .checklist li {
+    position: relative; padding-left: 7mm; margin-bottom: 2.5mm;
+  }
+  .checklist li::before {
+    content: ''; position: absolute; left: 0; top: 1.6mm;
+    width: 3.2mm; height: 3.2mm; border: 1.2px solid var(--gold);
+    border-radius: 0.8mm;
+  }
+  .muted-note { font-size: 10pt; color: var(--muted); }
+  .shots-2 .phone img { max-width: 74mm; margin: 0 auto; }
+</style>
+</head>
+<body>
+<!-- CAPA -->
+<div class="cover">
+  <div class="cover-mark">Missão <span>Maranhão</span></div>
+  <div>
+    <div class="cover-eyebrow">Manual de uso</div>
+    <h1>Assinatura<br>popular<br>da PEC</h1>
+    <div class="cover-rule"></div>
+    <div class="cover-sub">
+      Como o cidadão assina a Proposta de Emenda à Constituição Estadual
+      nº 14, de 2026, e como a equipe acompanha a coleta até o protocolo
+      na Assembleia Legislativa.
+    </div>
+  </div>
+  <div class="cover-foot">Versão 1.0 · Setembro de 2026</div>
+</div>
+
+<!-- PARTE 1 -->
+<div class="page">
+  <div class="section-tag">Parte 1</div>
+  <h2>O que é o sistema</h2>
+  <p class="lead">
+    A plataforma coleta, pela internet, as assinaturas de eleitores que
+    apoiam a <strong>PEC nº 14, de 2026</strong> — uma proposta de emenda à
+    Constituição do Maranhão de <strong>iniciativa popular</strong>.
+  </p>
+  <p>
+    Iniciativa popular significa que a proposta não é apresentada por um
+    deputado: ela é apresentada pelos próprios eleitores. Para isso, a
+    Constituição do Estado exige um número mínimo de assinaturas, espalhadas
+    por um número mínimo de municípios. Enquanto esses números não são
+    alcançados, a proposta não pode ser protocolada.
+  </p>
+  <p>
+    O sistema faz três coisas: <strong>recebe</strong> a assinatura do
+    eleitor, <strong>confere</strong> em tempo real se os requisitos da lei já
+    foram cumpridos e <strong>guarda a prova</strong> de que cada assinatura
+    foi dada sobre aquele texto específico da proposta.
+  </p>
+
+  <h3>Endereços</h3>
+  <table>
+    <tr><th>Onde</th><th>Endereço</th><th>Quem usa</th></tr>
+    <tr>
+      <td>Assinar</td>
+      <td><code>/pec</code></td>
+      <td>Qualquer eleitor (link divulgado)</td>
+    </tr>
+    <tr>
+      <td>Íntegra da proposta</td>
+      <td><code>/pec/minuta</code></td>
+      <td>Qualquer pessoa</td>
+    </tr>
+    <tr>
+      <td>Painel da coleta</td>
+      <td><code>/pec/painel</code></td>
+      <td>Público — imprensa, apoiadores</td>
+    </tr>
+    <tr>
+      <td>Área administrativa</td>
+      <td><code>/admin/pec</code></td>
+      <td>Equipe da Missão (com senha)</td>
+    </tr>
+  </table>
+
+  <div class="callout">
+    <span class="callout-title">Senha de acesso</span>
+    A senha da área administrativa é a mesma do painel de grupos de WhatsApp
+    e é entregue separadamente, por segurança — ela não faz parte deste
+    documento.
+  </div>
+</div>
+
+<!-- PARTE 2 -->
+<div class="page">
+  <div class="section-tag">Parte 2</div>
+  <h2>O que a lei exige</h2>
+  <p>
+    O art. 41, inciso IV, da Constituição do Maranhão condiciona a proposta de
+    iniciativa popular a três exigências que precisam ser cumpridas
+    <strong>ao mesmo tempo</strong>. O sistema calcula as três sozinho, a cada
+    assinatura recebida.
+  </p>
+
+  <div class="kpi-grid">
+    <div class="kpi">
+      <span class="kpi-value">103.732</span>
+      <span class="kpi-label">Assinaturas no estado</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-value">40</span>
+      <span class="kpi-label">Municípios de 217</span>
+    </div>
+    <div class="kpi">
+      <span class="kpi-value">0,3%</span>
+      <span class="kpi-label">Do eleitorado de cada um</span>
+    </div>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">2% do eleitorado estadual.</span>
+      São 103.732 assinaturas, calculadas sobre um eleitorado de 5.186.562
+      eleitores aptos.
+    </div>
+    <div class="step">
+      <span class="step-title">18% dos municípios.</span>
+      As assinaturas não podem estar concentradas numa cidade só: precisam
+      alcançar pelo menos 40 dos 217 municípios maranhenses.
+    </div>
+    <div class="step">
+      <span class="step-title">0,3% dos eleitores de cada município.</span>
+      Um município só "conta" para os 40 quando reúne, sozinho, essa fração do
+      próprio eleitorado. Em uma cidade de 4.000 eleitores, são 12 assinaturas;
+      em São Luís, 2.269.
+    </div>
+    <div class="step">
+      <span class="step-title">Coleta eletrônica.</span>
+      A Constituição admite expressamente a assinatura por meio eletrônico —
+      que é o que esta plataforma faz.
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">Como o sistema decide que está "apta a protocolo"</span>
+    Não basta somar 103.732 assinaturas. O sistema considera a proposta apta
+    quando <strong>(a)</strong> pelo menos 40 municípios já bateram a própria
+    meta de 0,3% e <strong>(b)</strong> a soma das assinaturas
+    <strong>dentro desses municípios</strong> já chega a 103.732. É a leitura
+    mais rigorosa da regra — a que dificilmente será contestada na Assembleia.
+  </div>
+
+  <p class="muted-note">
+    Depois de protocolada, a Assembleia Legislativa tem 60 dias para apreciar a
+    proposta.
+  </p>
+</div>
+<!-- PARTE 3 -->
+<div class="page">
+  <div class="section-tag">Parte 3</div>
+  <h2>Como o eleitor assina</h2>
+  <p>
+    São cinco passos, em menos de dois minutos, no celular ou no computador.
+    Nenhum cadastro, nenhuma senha, nenhum aplicativo.
+  </p>
+
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/01-pec-inicial.png" alt="Tela inicial da assinatura">
+      <figcaption>1 · Quanto já foi coletado</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/02-pec-cidade.png" alt="Busca do município">
+      <figcaption>2 · Escolha do município</figcaption>
+    </figure>
+  </div>
+
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">Nome completo.</span>
+      Como está no título de eleitor.
+    </div>
+    <div class="step">
+      <span class="step-title">CPF.</span>
+      A pontuação aparece sozinha. O sistema confere se o número é válido —
+      CPF inventado é recusado na hora.
+    </div>
+    <div class="step">
+      <span class="step-title">Município onde vota.</span>
+      Basta digitar as primeiras letras. A busca ignora acentos e só aceita os
+      217 municípios do Maranhão.
+    </div>
+  </div>
+</div>
+
+<div class="page">
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/04-pec-leitura.png" alt="Confirmação de leitura e autorização">
+      <figcaption>3 · Leitura e autorização</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/05-pec-recibo.png" alt="Protocolo da assinatura">
+      <figcaption>4 · Protocolo da assinatura</figcaption>
+    </figure>
+  </div>
+
+  <div class="steps" style="counter-reset: step 3;">
+    <div class="step">
+      <span class="step-title">Confirmar que leu a proposta.</span>
+      Antes das caixas de confirmação, a tela oferece os dois caminhos de
+      leitura: ler a íntegra na própria plataforma ou baixar o documento
+      original. Sem marcar essa caixa, o botão de assinar não conclui.
+    </div>
+    <div class="step">
+      <span class="step-title">Autorizar o uso dos dados.</span>
+      O eleitor declara que vota naquele município, que subscreve a proposta e
+      que autoriza o uso de nome, CPF e município para instruir o protocolo na
+      Assembleia. Essa frase fica gravada junto com a assinatura.
+    </div>
+  </div>
+
+</div>
+
+<div class="page">
+  <h3>O protocolo da assinatura</h3>
+  <p>
+    Concluída a assinatura, o eleitor recebe um código no formato
+    <code>PEC-XXXXXXXXXX</code>. É o comprovante dele. Vale orientar que
+    guarde ou tire um print: é por esse código que a equipe localiza uma
+    assinatura específica depois, sem precisar procurar por CPF.
+  </p>
+
+  <h3>O que fica guardado em cada assinatura</h3>
+  <p>
+    Além do que o eleitor digita, o sistema grava sozinho o que dá sustentação
+    jurídica ao apoio — é esse conjunto que vai para a Assembleia.
+  </p>
+  <table>
+    <tr><th>Registro</th><th>Para que serve</th></tr>
+    <tr>
+      <td>Nome, CPF e município</td>
+      <td>Identificar o eleitor perante a Assembleia.</td>
+    </tr>
+    <tr>
+      <td>Protocolo</td>
+      <td>Comprovante do eleitor e busca rápida pela equipe.</td>
+    </tr>
+    <tr>
+      <td>Data e hora</td>
+      <td>Provar quando o apoio foi dado.</td>
+    </tr>
+    <tr>
+      <td>Versão do texto assinado</td>
+      <td>Provar qual redação da proposta o eleitor endossou.</td>
+    </tr>
+    <tr>
+      <td>Frases de leitura e autorização</td>
+      <td>Registrar exatamente o que foi declarado no momento da assinatura.</td>
+    </tr>
+    <tr>
+      <td>Selo do registro</td>
+      <td>Encadear a assinatura à anterior e detectar alteração posterior.</td>
+    </tr>
+  </table>
+  <p class="muted-note">
+    O sistema guarda ainda o navegador usado e um código derivado do endereço
+    de internet — nunca o endereço em si —, apenas para auditoria da coleta.
+  </p>
+
+  <div class="callout">
+    <span class="callout-title">Se a pessoa assinar duas vezes</span>
+    O sistema não duplica. Ao repetir o mesmo CPF, ele devolve a assinatura
+    que já existia, com o mesmo protocolo, e avisa na tela que o apoio
+    continua valendo. Cada eleitor conta uma vez — como a Assembleia exige.
+  </div>
+</div>
+
+<!-- PARTE 4 -->
+<div class="page">
+  <div class="section-tag">Parte 4</div>
+  <h2>A íntegra da proposta</h2>
+  <p>
+    A assinatura de iniciativa popular só tem valor se o eleitor teve acesso ao
+    texto que está apoiando. Por isso a plataforma publica a proposta inteira,
+    e não um resumo.
+  </p>
+
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/06-pec-minuta.png" alt="Íntegra da proposta na plataforma">
+      <figcaption>Texto completo na tela</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/07-pec-requisitos.png" alt="Resumo dos requisitos legais">
+      <figcaption>Requisitos explicados ao eleitor</figcaption>
+    </figure>
+  </div>
+
+</div>
+
+<div class="page">
+  <h3>Três garantias no mesmo lugar</h3>
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">O texto na tela.</span>
+      Artigo por artigo, igual ao documento oficial — conferido palavra por
+      palavra contra o arquivo original.
+    </div>
+    <div class="step">
+      <span class="step-title">O arquivo para baixar.</span>
+      O documento original, do jeito que saiu da Assembleia.
+    </div>
+    <div class="step">
+      <span class="step-title">O código de verificação.</span>
+      Um código SHA-256 identifica o arquivo de forma única. Se uma vírgula do
+      documento mudar, o código muda inteiro. Cada assinatura guarda o código
+      do texto que endossou.
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">Para que serve esse código na prática</span>
+    Se alguém questionar "as pessoas assinaram outro texto", o código responde.
+    Ele prova qual arquivo estava publicado no momento de cada assinatura. É
+    uma informação pública — qualquer pessoa que baixe o documento pode
+    calcular o mesmo código e conferir.
+  </div>
+</div>
+<!-- PARTE 5 -->
+<div class="page">
+  <div class="section-tag">Parte 5</div>
+  <h2>O painel público</h2>
+  <p>
+    Em <code>/pec/painel</code> qualquer pessoa acompanha o andamento da
+    coleta. É a página para mandar à imprensa e às lideranças municipais —
+    ela mostra o esforço em números, sem expor nenhum dado de eleitor.
+  </p>
+
+  <figure>
+    <img src="shots/08-painel-metas.png" alt="Painel com as três metas">
+    <figcaption>As três metas, lado a lado</figcaption>
+  </figure>
+
+  <p>
+    Os três cartões repetem exatamente as exigências da Parte 2: assinaturas no
+    estado, municípios abrangidos e situação para protocolo. Cada um tem a sua
+    barra de progresso e fica dourado quando a meta é atingida.
+  </p>
+
+</div>
+
+<div class="page">
+  <figure>
+    <img src="shots/09-painel-municipios.png" alt="Progresso por município">
+    <figcaption>Progresso município a município</figcaption>
+  </figure>
+
+  <p>
+    A tabela abaixo dos cartões ordena os municípios pelo número de
+    assinaturas. É o mapa de onde falta esforço: cidades pequenas sobem rápido
+    (a meta local é baixa) e costumam ser o caminho mais curto para completar
+    os 40 municípios exigidos.
+  </p>
+</div>
+
+<!-- PARTE 6 -->
+<div class="page">
+  <div class="section-tag">Parte 6</div>
+  <h2>Área administrativa</h2>
+  <p>
+    O acesso é por senha, em <code>/admin</code>. Lá dentro, a barra de
+    navegação alterna entre <strong>Grupos de WhatsApp</strong> e
+    <strong>Assinaturas da PEC</strong> — é a mesma sessão nos dois painéis.
+  </p>
+
+  <figure>
+    <img src="shots/10-admin-login.png" alt="Tela de login">
+    <figcaption>Entrada da área administrativa</figcaption>
+  </figure>
+
+  <h3>Requisitos constitucionais</h3>
+  <figure>
+    <img src="shots/11-admin-requisitos.png" alt="Tabela de requisitos">
+    <figcaption>Exigido, atual e situação — linha a linha</figcaption>
+  </figure>
+  <p>
+    A leitura é direta: cada linha mostra quanto a lei exige, quanto já existe
+    e se aquele requisito está <strong>Atingido</strong> ou
+    <strong>Em coleta</strong>. A frase final ("Apta a protocolo: sim / ainda
+    não") é a resposta que interessa ao jurídico.
+  </p>
+</div>
+
+<div class="page">
+  <h2>Acompanhar as assinaturas</h2>
+  <figure>
+    <img src="shots/12-admin-assinaturas.png" alt="Lista de assinaturas">
+    <figcaption>Todas as assinaturas recebidas</figcaption>
+  </figure>
+  <p>
+    Nome, CPF, município, protocolo e data de cada assinatura, da mais recente
+    para a mais antiga. O contador ao lado do título é o total.
+  </p>
+
+  <h3>Exportar para planilha</h3>
+  <p>
+    O botão <strong>Exportar CSV</strong> baixa a lista completa, pronta para
+    abrir no Excel. Além dos dados do eleitor, o arquivo traz o código do texto
+    assinado e o código do próprio registro — é esse arquivo que instrui o
+    protocolo na Assembleia.
+  </p>
+
+  <div class="callout warn">
+    <span class="callout-title">Cuidado com o arquivo exportado</span>
+    A planilha contém CPF, que é dado pessoal protegido pela LGPD. Ela deve
+    circular apenas entre quem precisa e nunca ser enviada por grupo de
+    WhatsApp, e-mail aberto ou armazenamento compartilhado sem senha.
+  </div>
+
+</div>
+
+<div class="page">
+  <h3>Remover uma assinatura</h3>
+  <p>
+    Existe um botão <strong>Remover</strong> em cada linha, com confirmação. Ele
+    serve para casos excepcionais — um pedido formal do próprio eleitor, por
+    exemplo.
+  </p>
+  <div class="callout warn">
+    <span class="callout-title">Remover quebra a cadeia de integridade</span>
+    As assinaturas são encadeadas: cada uma é selada junto com a anterior.
+    Remover uma do meio faz o sistema passar a acusar "cadeia quebrada" a
+    partir dali. Isso não apaga as outras assinaturas nem invalida a coleta,
+    mas exige explicação se a Assembleia perguntar. Registre por escrito o
+    motivo de cada remoção.
+  </div>
+  <h2 style="margin-top:8mm">Manter os dados da proposta</h2>
+  <figure>
+    <img src="shots/14-admin-proposta.png" alt="Edição dos dados da proposta">
+    <figcaption>Título, ementa e link do documento oficial</figcaption>
+  </figure>
+  <p>
+    Aqui se ajusta o que o eleitor lê no topo da página de assinatura: o título
+    da proposta, a ementa (o resumo) e o endereço do documento oficial, quando
+    houver um link público da Assembleia.
+  </p>
+  <div class="callout">
+    <span class="callout-title">Mudou o texto no meio da coleta?</span>
+    As assinaturas antigas continuam valendo e o sistema passa a registrar qual
+    versão cada eleitor endossou. Uma tabela de versões aparece
+    automaticamente, mostrando quantas assinaturas ficaram em cada texto — o
+    que permite separá-las caso a Assembleia questione.
+  </div>
+
+</div>
+
+<div class="page">
+  <h2>Integridade da coleta</h2>
+  <figure>
+    <img src="shots/15-admin-integridade.png" alt="Cartão de integridade">
+    <figcaption>Conferência automática da cadeia</figcaption>
+  </figure>
+  <p>
+    O sistema reconfere todas as assinaturas, uma a uma, cada vez que a página
+    é aberta. "Cadeia íntegra" significa que nenhuma assinatura foi alterada
+    depois de registrada.
+  </p>
+  <div class="callout">
+    <span class="callout-title">Guarde o hash final fora do sistema</span>
+    O <strong>hash final da coleta</strong> é o selo de tudo o que foi coletado
+    até aquele momento. Copie esse código periodicamente para um lugar fora da
+    plataforma — uma ata, um e-mail datado, um protocolo. A partir daí,
+    qualquer reescrita posterior da coleta passa a ser demonstrável.
+  </div>
+</div>
+<!-- PARTE 7 -->
+<div class="page">
+  <div class="section-tag">Parte 7</div>
+  <h2>Cuidados e rotina</h2>
+
+  <h3>Dados pessoais (LGPD)</h3>
+  <p>
+    A coleta reúne nome, CPF e município de milhares de eleitores. A própria
+    página avisa ao eleitor que esses dados servem exclusivamente para instruir
+    o protocolo na Assembleia — e esse compromisso precisa ser cumprido.
+  </p>
+  <ul class="checklist">
+    <li>Usar a exportação CSV apenas para o protocolo e para conferências internas.</li>
+    <li>Não publicar, não repassar a terceiros e não usar para campanha ou disparo de mensagens.</li>
+    <li>Guardar o arquivo exportado em local com senha; apagar as cópias que não forem mais necessárias.</li>
+    <li>Atender pedidos de remoção feitos pelo próprio eleitor.</li>
+  </ul>
+
+  <h3>Eleitorado ainda provisório</h3>
+  <div class="callout warn">
+    <span class="callout-title">As metas por município podem mudar</span>
+    O total estadual (5.186.562 eleitores) é oficial do TSE/TRE-MA. Já a
+    divisão por município é, hoje, uma estimativa: os municípios âncora usam
+    números oficiais e os demais são rateados pela população do Censo IBGE
+    2022. Quando a tabela oficial do TSE por município for carregada, as metas
+    locais — e a lista dos municípios já qualificados — serão recalculadas.
+    Enquanto isso, o painel público exibe um aviso de eleitorado provisório.
+  </div>
+
+</div>
+
+<div class="page">
+  <h3>Rotina sugerida</h3>
+  <table>
+    <tr><th>Quando</th><th>O que fazer</th></tr>
+    <tr>
+      <td>Toda semana</td>
+      <td>Abrir o painel administrativo e conferir quantos municípios faltam para os 40.</td>
+    </tr>
+    <tr>
+      <td>Toda semana</td>
+      <td>Escolher as cidades pequenas mais próximas da meta local e concentrar a divulgação nelas.</td>
+    </tr>
+    <tr>
+      <td>Todo mês</td>
+      <td>Exportar o CSV e guardar a cópia; anotar o hash final da coleta em ata ou e-mail datado.</td>
+    </tr>
+    <tr>
+      <td>Antes do protocolo</td>
+      <td>Conferir se as três linhas de requisitos estão "Atingido" e se a cadeia está íntegra.</td>
+    </tr>
+  </table>
+
+  <h3>Se algo não funcionar</h3>
+  <table>
+    <tr><th>Sintoma</th><th>O que verificar</th></tr>
+    <tr>
+      <td>"CPF inválido"</td>
+      <td>O número foi digitado errado. O sistema confere os dígitos verificadores.</td>
+    </tr>
+    <tr>
+      <td>Cidade não aparece</td>
+      <td>Só existem os 217 municípios do Maranhão. Cidade de outro estado não é aceita.</td>
+    </tr>
+    <tr>
+      <td>Botão de assinar não conclui</td>
+      <td>Falta marcar a confirmação de leitura ou a autorização de uso dos dados.</td>
+    </tr>
+    <tr>
+      <td>"Cadeia quebrada"</td>
+      <td>Alguma assinatura foi removida ou alterada. Verificar o registro da remoção.</td>
+    </tr>
+  </table>
+</div>
+
+<!-- RESUMO -->
+<div class="page">
+  <div class="section-tag">Resumo</div>
+  <h2>O essencial em uma página</h2>
+
+  <table>
+    <tr><th>Pergunta</th><th>Resposta</th></tr>
+    <tr>
+      <td>Quantas assinaturas</td>
+      <td>103.732 — 2% dos 5.186.562 eleitores do Maranhão.</td>
+    </tr>
+    <tr>
+      <td>Em quantas cidades</td>
+      <td>40 municípios, de 217 — e cada um precisa reunir 0,3% do próprio eleitorado.</td>
+    </tr>
+    <tr>
+      <td>Quem pode assinar</td>
+      <td>Eleitor do Maranhão, uma vez, informando nome, CPF e município onde vota.</td>
+    </tr>
+    <tr>
+      <td>O que a pessoa recebe</td>
+      <td>Um protocolo <code>PEC-XXXXXXXXXX</code>, que serve de comprovante.</td>
+    </tr>
+    <tr>
+      <td>Onde acompanhar</td>
+      <td><code>/pec/painel</code> (público) e <code>/admin/pec</code> (equipe).</td>
+    </tr>
+    <tr>
+      <td>Como levar ao protocolo</td>
+      <td>Exportar o CSV na área administrativa, com todas as assinaturas e seus códigos.</td>
+    </tr>
+    <tr>
+      <td>Prazo da Assembleia</td>
+      <td>60 dias para apreciar a proposta, depois de protocolada.</td>
+    </tr>
+  </table>
+
+  <div class="divider"></div>
+
+  <h3>Três coisas que não podem ser esquecidas</h3>
+  <div class="steps">
+    <div class="step">
+      <span class="step-title">O CPF é dado pessoal.</span>
+      A planilha exportada só circula entre quem precisa dela para o protocolo.
+    </div>
+    <div class="step">
+      <span class="step-title">O hash final é a prova.</span>
+      Anotado fora do sistema, de tempos em tempos, ele sustenta a coleta
+      diante de qualquer questionamento.
+    </div>
+    <div class="step">
+      <span class="step-title">Cidade pequena fecha meta rápido.</span>
+      A exigência dos 40 municípios costuma ser o gargalo — e são as cidades
+      menores que a resolvem.
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
