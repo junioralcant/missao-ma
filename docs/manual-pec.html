@@ -187,8 +187,9 @@
     alcançados, a proposta não pode ser protocolada.
   </p>
   <p>
-    O sistema faz três coisas: <strong>recebe</strong> a assinatura do
-    eleitor, <strong>confere</strong> em tempo real se os requisitos da lei já
+    O sistema faz quatro coisas: <strong>recebe</strong> o pedido do eleitor,
+    <strong>confirma por e-mail</strong> que o pedido partiu mesmo de quem diz
+    ser, <strong>confere</strong> em tempo real se os requisitos da lei já
     foram cumpridos e <strong>guarda a prova</strong> de que cada assinatura
     foi dada sobre aquele texto específico da proposta.
   </p>
@@ -200,6 +201,11 @@
       <td>Assinar</td>
       <td><code>/pec</code></td>
       <td>Qualquer eleitor (link divulgado)</td>
+    </tr>
+    <tr>
+      <td>Confirmar a assinatura</td>
+      <td><code>/pec/confirmar/…</code></td>
+      <td>Quem recebeu o e-mail (link único)</td>
     </tr>
     <tr>
       <td>Íntegra da proposta</td>
@@ -295,7 +301,7 @@
   <div class="section-tag">Parte 3</div>
   <h2>Como o eleitor assina</h2>
   <p>
-    São cinco passos, em menos de dois minutos, no celular ou no computador.
+    São sete passos, em menos de três minutos: seis na tela e um no e-mail.
     Nenhum cadastro, nenhuma senha, nenhum aplicativo.
   </p>
 
@@ -317,8 +323,12 @@
     </div>
     <div class="step">
       <span class="step-title">CPF.</span>
-      A pontuação aparece sozinha. O sistema confere se o número é válido —
-      CPF inventado é recusado na hora.
+      A pontuação aparece sozinha e CPF inventado é recusado na hora.
+    </div>
+    <div class="step">
+      <span class="step-title">E-mail.</span>
+      Por ele chega o link de confirmação. Endereço já usado em uma assinatura
+      confirmada é recusado.
     </div>
     <div class="step">
       <span class="step-title">Município onde vota.</span>
@@ -335,12 +345,12 @@
       <figcaption>3 · Leitura e autorização</figcaption>
     </figure>
     <figure class="phone">
-      <img src="shots/05-pec-recibo.png" alt="Protocolo da assinatura">
-      <figcaption>4 · Protocolo da assinatura</figcaption>
+      <img src="shots/05-pec-email-enviado.png" alt="Aviso de e-mail enviado">
+      <figcaption>5 · O e-mail a caminho</figcaption>
     </figure>
   </div>
 
-  <div class="steps" style="counter-reset: step 3;">
+  <div class="steps" style="counter-reset: step 4;">
     <div class="step">
       <span class="step-title">Confirmar que leu a proposta.</span>
       Antes das caixas de confirmação, a tela oferece os dois caminhos de
@@ -350,17 +360,48 @@
     <div class="step">
       <span class="step-title">Autorizar o uso dos dados.</span>
       O eleitor declara que vota naquele município, que subscreve a proposta e
-      que autoriza o uso de nome, CPF e município para instruir o protocolo na
-      Assembleia. Essa frase fica gravada junto com a assinatura.
+      que autoriza o uso de nome, CPF, e-mail e município para instruir o
+      protocolo na Assembleia. Essa frase fica gravada junto com a assinatura.
     </div>
   </div>
 
 </div>
 
 <div class="page">
+  <div class="shots-2">
+    <figure class="phone">
+      <img src="shots/06-pec-confirmacao.png" alt="Tela de confirmação da assinatura">
+      <figcaption>6 · Conferência dos dados</figcaption>
+    </figure>
+    <figure class="phone">
+      <img src="shots/07-pec-recibo.png" alt="Protocolo da assinatura">
+      <figcaption>7 · Protocolo da assinatura</figcaption>
+    </figure>
+  </div>
+
+  <div class="steps" style="counter-reset: step 6;">
+    <div class="step">
+      <span class="step-title">Confirmar pelo e-mail.</span>
+      A mensagem chega em segundos, com o botão <strong>Assinar PEC</strong>.
+      Ele abre uma página que mostra nome, município e e-mail para conferência
+      — e é o clique nessa página que registra a assinatura de verdade. O link
+      vale por 48 horas e serve uma única vez.
+    </div>
+  </div>
+
+  <div class="callout">
+    <span class="callout-title">Por que confirmar por e-mail</span>
+    A confirmação prova que o pedido partiu de alguém com acesso àquela caixa
+    de mensagens. É o que impede que uma pessoa assine no lugar de outra em
+    massa, com endereços inventados — e é uma exigência barata para o eleitor,
+    que não precisa criar conta nem senha.
+  </div>
+</div>
+
+<div class="page">
   <h3>O protocolo da assinatura</h3>
   <p>
-    Concluída a assinatura, o eleitor recebe um código no formato
+    Concluída a confirmação, o eleitor recebe um código no formato
     <code>PEC-XXXXXXXXXX</code>. É o comprovante dele. Vale orientar que
     guarde ou tire um print: é por esse código que a equipe localiza uma
     assinatura específica depois, sem precisar procurar por CPF.
@@ -374,8 +415,9 @@
   <table>
     <tr><th>Registro</th><th>Para que serve</th></tr>
     <tr>
-      <td>Nome, CPF e município</td>
-      <td>Identificar o eleitor perante a Assembleia.</td>
+      <td>Nome, CPF, e-mail e município</td>
+      <td>Identificar o eleitor perante a Assembleia. O e-mail ainda prova
+      que a assinatura foi confirmada por um canal real.</td>
     </tr>
     <tr>
       <td>Protocolo</td>
@@ -383,7 +425,8 @@
     </tr>
     <tr>
       <td>Data e hora</td>
-      <td>Provar quando o apoio foi dado.</td>
+      <td>Provar quando o apoio foi confirmado — o registro nasce no clique
+      de confirmação, não no preenchimento do formulário.</td>
     </tr>
     <tr>
       <td>Versão do texto assinado</td>
@@ -407,7 +450,10 @@
     <span class="callout-title">Se a pessoa assinar duas vezes</span>
     O sistema não duplica. Ao repetir o mesmo CPF, ele devolve a assinatura
     que já existia, com o mesmo protocolo, e avisa na tela que o apoio
-    continua valendo. Cada eleitor conta uma vez — como a Assembleia exige.
+    continua valendo. Vale o mesmo para o e-mail: endereço já confirmado é
+    recusado. Se o pedido ainda estiver aguardando confirmação, preencher o
+    formulário de novo substitui os dados e invalida o link anterior. Cada
+    eleitor conta uma vez — como a Assembleia exige.
   </div>
 </div>
 
@@ -423,11 +469,11 @@
 
   <div class="shots-2">
     <figure class="phone">
-      <img src="shots/06-pec-minuta.png" alt="Íntegra da proposta na plataforma">
+      <img src="shots/08-pec-minuta.png" alt="Íntegra da proposta na plataforma">
       <figcaption>Texto completo na tela</figcaption>
     </figure>
     <figure class="phone">
-      <img src="shots/07-pec-requisitos.png" alt="Resumo dos requisitos legais">
+      <img src="shots/09-pec-requisitos.png" alt="Resumo dos requisitos legais">
       <figcaption>Requisitos explicados ao eleitor</figcaption>
     </figure>
   </div>
@@ -473,7 +519,7 @@
   </p>
 
   <figure>
-    <img src="shots/08-painel-metas.png" alt="Painel com as três metas">
+    <img src="shots/10-painel-metas.png" alt="Painel com as três metas">
     <figcaption>As três metas, lado a lado</figcaption>
   </figure>
 
@@ -487,7 +533,7 @@
 
 <div class="page">
   <figure>
-    <img src="shots/09-painel-municipios.png" alt="Progresso por município">
+    <img src="shots/11-painel-municipios.png" alt="Progresso por município">
     <figcaption>Progresso município a município</figcaption>
   </figure>
 
@@ -510,13 +556,16 @@
   </p>
 
   <figure>
-    <img src="shots/10-admin-login.png" alt="Tela de login">
+    <img src="shots/12-admin-login.png" alt="Tela de login">
     <figcaption>Entrada da área administrativa</figcaption>
   </figure>
 
+</div>
+
+<div class="page">
   <h3>Requisitos constitucionais</h3>
   <figure>
-    <img src="shots/11-admin-requisitos.png" alt="Tabela de requisitos">
+    <img src="shots/13-admin-requisitos.png" alt="Tabela de requisitos">
     <figcaption>Exigido, atual e situação — linha a linha</figcaption>
   </figure>
   <p>
@@ -530,14 +579,18 @@
 <div class="page">
   <h2>Acompanhar as assinaturas</h2>
   <figure>
-    <img src="shots/12-admin-assinaturas.png" alt="Lista de assinaturas">
+    <img src="shots/14-admin-assinaturas.png" alt="Lista de assinaturas">
     <figcaption>Todas as assinaturas recebidas</figcaption>
   </figure>
   <p>
-    Nome, CPF, município, protocolo e data de cada assinatura, da mais recente
-    para a mais antiga. O contador ao lado do título é o total.
+    Nome, CPF, e-mail, município, protocolo e data de cada assinatura, da mais
+    recente para a mais antiga. O contador ao lado do título é o total — e só
+    entram aqui as assinaturas já confirmadas por e-mail.
   </p>
 
+</div>
+
+<div class="page">
   <h3>Exportar para planilha</h3>
   <p>
     O botão <strong>Exportar CSV</strong> baixa a lista completa, pronta para
@@ -553,6 +606,33 @@
     WhatsApp, e-mail aberto ou armazenamento compartilhado sem senha.
   </div>
 
+
+  <div class="divider"></div>
+
+  <h2>Aguardando confirmação</h2>
+  <figure>
+    <img src="shots/15-admin-pendentes.png" alt="Pedidos aguardando confirmação">
+    <figcaption>Quem pediu para assinar e ainda não confirmou</figcaption>
+  </figure>
+  <p>
+    Logo abaixo da lista oficial fica a tabela dos pedidos que ainda não foram
+    confirmados: nome, e-mail, município, quando o pedido foi feito e quando o
+    link expira. <strong>Nada disso conta para as metas</strong> — é apenas a
+    fila de quem começou e não terminou.
+  </p>
+  <p>
+    A tabela serve para duas leituras. Se o número de pendentes for pequeno
+    diante do total, o fluxo está saudável. Se começar a crescer, é sinal de
+    que as mensagens estão caindo em spam ou demorando — e vale avisar na
+    divulgação para conferir a caixa de spam.
+  </p>
+
+  <div class="callout">
+    <span class="callout-title">Pedido expirado não é problema</span>
+    Passadas as 48 horas, o link deixa de valer e o pedido some da fila. A
+    pessoa pode simplesmente preencher o formulário de novo, com o mesmo
+    e-mail, e receber um link novo.
+  </div>
 </div>
 
 <div class="page">
@@ -560,7 +640,8 @@
   <p>
     Existe um botão <strong>Remover</strong> em cada linha, com confirmação. Ele
     serve para casos excepcionais — um pedido formal do próprio eleitor, por
-    exemplo.
+    exemplo. Remover também libera o e-mail e o CPF: a pessoa pode assinar de
+    novo depois, se quiser.
   </p>
   <div class="callout warn">
     <span class="callout-title">Remover quebra a cadeia de integridade</span>
@@ -570,9 +651,12 @@
     mas exige explicação se a Assembleia perguntar. Registre por escrito o
     motivo de cada remoção.
   </div>
-  <h2 style="margin-top:8mm">Manter os dados da proposta</h2>
+</div>
+
+<div class="page">
+  <h2>Manter os dados da proposta</h2>
   <figure>
-    <img src="shots/14-admin-proposta.png" alt="Edição dos dados da proposta">
+    <img src="shots/17-admin-proposta.png" alt="Edição dos dados da proposta">
     <figcaption>Título, ementa e link do documento oficial</figcaption>
   </figure>
   <p>
@@ -593,7 +677,7 @@
 <div class="page">
   <h2>Integridade da coleta</h2>
   <figure>
-    <img src="shots/15-admin-integridade.png" alt="Cartão de integridade">
+    <img src="shots/18-admin-integridade.png" alt="Cartão de integridade">
     <figcaption>Conferência automática da cadeia</figcaption>
   </figure>
   <p>
@@ -616,13 +700,14 @@
 
   <h3>Dados pessoais (LGPD)</h3>
   <p>
-    A coleta reúne nome, CPF e município de milhares de eleitores. A própria
+    A coleta reúne nome, CPF, e-mail e município de milhares de eleitores. A própria
     página avisa ao eleitor que esses dados servem exclusivamente para instruir
     o protocolo na Assembleia — e esse compromisso precisa ser cumprido.
   </p>
   <ul class="checklist">
     <li>Usar a exportação CSV apenas para o protocolo e para conferências internas.</li>
     <li>Não publicar, não repassar a terceiros e não usar para campanha ou disparo de mensagens.</li>
+    <li>O e-mail foi dado para confirmar a assinatura, não para receber comunicados: usá-lo em lista de divulgação desvia a finalidade declarada ao eleitor.</li>
     <li>Guardar o arquivo exportado em local com senha; apagar as cópias que não forem mais necessárias.</li>
     <li>Atender pedidos de remoção feitos pelo próprio eleitor.</li>
   </ul>
@@ -678,6 +763,18 @@
       <td>Falta marcar a confirmação de leitura ou a autorização de uso dos dados.</td>
     </tr>
     <tr>
+      <td>O e-mail não chegou</td>
+      <td>Conferir a caixa de spam. Passados alguns minutos, basta preencher o formulário de novo — o link anterior é substituído.</td>
+    </tr>
+    <tr>
+      <td>"Este e-mail já foi usado"</td>
+      <td>O endereço já confirmou uma assinatura. Cada e-mail vale uma vez, como o CPF.</td>
+    </tr>
+    <tr>
+      <td>"Link inválido ou expirado"</td>
+      <td>O pedido passou das 48 horas, já foi confirmado ou foi substituído por um mais recente. Preencher o formulário de novo resolve.</td>
+    </tr>
+    <tr>
       <td>"Cadeia quebrada"</td>
       <td>Alguma assinatura foi removida ou alterada. Verificar o registro da remoção.</td>
     </tr>
@@ -701,11 +798,15 @@
     </tr>
     <tr>
       <td>Quem pode assinar</td>
-      <td>Eleitor do Maranhão, uma vez, informando nome, CPF e município onde vota.</td>
+      <td>Eleitor do Maranhão, uma vez, informando nome, CPF, e-mail e município onde vota.</td>
     </tr>
     <tr>
       <td>O que a pessoa recebe</td>
-      <td>Um protocolo <code>PEC-XXXXXXXXXX</code>, que serve de comprovante.</td>
+      <td>Um e-mail com o botão <strong>Assinar PEC</strong> e, depois de confirmar, um protocolo <code>PEC-XXXXXXXXXX</code>.</td>
+    </tr>
+    <tr>
+      <td>Quando a assinatura conta</td>
+      <td>Só depois da confirmação por e-mail. Pedido não confirmado não entra em nenhuma meta.</td>
     </tr>
     <tr>
       <td>Onde acompanhar</td>
@@ -726,8 +827,9 @@
   <h3>Três coisas que não podem ser esquecidas</h3>
   <div class="steps">
     <div class="step">
-      <span class="step-title">O CPF é dado pessoal.</span>
-      A planilha exportada só circula entre quem precisa dela para o protocolo.
+      <span class="step-title">CPF e e-mail são dados pessoais.</span>
+      A planilha exportada só circula entre quem precisa dela para o protocolo,
+      e o e-mail não vira lista de divulgação.
     </div>
     <div class="step">
       <span class="step-title">O hash final é a prova.</span>

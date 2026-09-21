@@ -1,4 +1,9 @@
+const crypto = require("crypto");
+const { DatabaseSync } = require("node:sqlite");
+
 const BASE = process.env.BASE_URL || "http://localhost:3100";
+
+const DB_PATH = process.env.DATABASE_PATH || "/tmp/demo-pec/app.db";
 
 const NAMES = [
   "Maria dos Santos Silva", "Antônio Pereira Lima", "Francisca Sousa Costa",
@@ -44,30 +49,49 @@ const makeCpf = (seed) => {
 };
 
 (async () => {
+  const db = new DatabaseSync(DB_PATH);
   let seed = 100000000;
   let ok = 0;
   for (const [city, count] of PLAN) {
     for (let i = 0; i < count; i += 1) {
       seed += 7919;
-      const response = await fetch(`${BASE}/api/pec/sign`, {
+      const cpf = makeCpf(seed);
+      const email = `assinante${ok + 1}@example.com`;
+      const request = await fetch(`${BASE}/api/pec/sign`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           name: NAMES[ok % NAMES.length],
-          cpf: makeCpf(seed),
+          cpf,
+          email,
           city,
           consent: true,
           hasReadDocument: true,
         }),
       });
-      const data = await response.json();
-      if (!response.ok) {
-        console.error("falhou", city, data);
+      if (!request.ok) {
+        console.error("falhou o pedido", city, await request.json());
+        process.exit(1);
+      }
+
+      const token = crypto.randomBytes(32).toString("hex");
+      db.prepare("UPDATE signature_requests SET token_hash = ? WHERE cpf = ?").run(
+        crypto.createHash("sha256").update(token).digest("hex"),
+        cpf,
+      );
+
+      const confirmation = await fetch(`${BASE}/api/pec/confirm`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ token }),
+      });
+      if (!confirmation.ok) {
+        console.error("falhou a confirmacao", city, await confirmation.json());
         process.exit(1);
       }
       ok += 1;
     }
     console.log(`${city}: ${count} assinaturas`);
   }
-  console.log(`total: ${ok} assinaturas ficticias`);
+  console.log(`total: ${ok} assinaturas ficticias confirmadas`);
 })();
