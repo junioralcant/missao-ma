@@ -2,7 +2,70 @@ import fs from 'fs';
 import os from 'os';
 import path from 'path';
 import {DatabaseSync} from 'node:sqlite';
+import {verifySignatureChain} from '../integrity';
+import {buildEntryHash} from '../signature';
 import type {Registration} from '../types';
+
+const LEGACY_SIGNATURE = {
+  name: 'Maria Silva',
+  cpf: '52998224725',
+  city: 'São Luís',
+  proposalHash: 'proposta-antiga',
+  documentHash: 'documento-antigo',
+  consentText: 'consentimento antigo',
+  readingText: 'leitura antiga',
+  createdAt: '2026-09-01 12:00:00',
+};
+
+const createSignaturesWithoutEmailDatabase = (): string => {
+  const directory = fs.mkdtempSync(
+    path.join(os.tmpdir(), 'missao-ma-assinaturas-'),
+  );
+  const databasePath = path.join(directory, 'app.db');
+  const database = new DatabaseSync(databasePath);
+  database.exec(`
+    CREATE TABLE signatures (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      cpf TEXT NOT NULL UNIQUE,
+      city TEXT NOT NULL,
+      voter_id TEXT,
+      receipt TEXT NOT NULL,
+      ip_hash TEXT NOT NULL,
+      user_agent TEXT NOT NULL,
+      proposal_hash TEXT NOT NULL,
+      document_hash TEXT NOT NULL,
+      consent_text TEXT NOT NULL,
+      reading_text TEXT NOT NULL,
+      prev_hash TEXT NOT NULL,
+      entry_hash TEXT NOT NULL,
+      created_at TEXT NOT NULL
+    );
+  `);
+  database
+    .prepare(
+      `INSERT INTO signatures
+     (name, cpf, city, receipt, ip_hash, user_agent, proposal_hash, document_hash, consent_text, reading_text, prev_hash, entry_hash, created_at)
+     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    )
+    .run(
+      LEGACY_SIGNATURE.name,
+      LEGACY_SIGNATURE.cpf,
+      LEGACY_SIGNATURE.city,
+      'PEC-ANTIGA123',
+      'hash-do-ip',
+      'navegador antigo',
+      LEGACY_SIGNATURE.proposalHash,
+      LEGACY_SIGNATURE.documentHash,
+      LEGACY_SIGNATURE.consentText,
+      LEGACY_SIGNATURE.readingText,
+      '',
+      buildEntryHash({prevHash: '', ...LEGACY_SIGNATURE}),
+      LEGACY_SIGNATURE.createdAt,
+    );
+  database.close();
+  return databasePath;
+};
 
 const createLegacyDatabase = (): string => {
   const directory = fs.mkdtempSync(path.join(os.tmpdir(), 'missao-ma-legacy-'));
@@ -190,5 +253,93 @@ describe('migração dos cadastros com e-mail repetido', () => {
   it('não deve rodar de novo em um banco já migrado', () => {
     const repository = loadRepository(databasePath);
     expect(repository.listRegistrations()).toHaveLength(4);
+  });
+});
+
+describe('migração das assinaturas sem e-mail', () => {
+  const originalDatabasePath = process.env.DATABASE_PATH;
+  let databasePath: string;
+  let repository: typeof import('../repository');
+
+  beforeAll(() => {
+    databasePath = createSignaturesWithoutEmailDatabase();
+    repository = loadRepository(databasePath);
+  });
+
+  afterAll(() => {
+    process.env.DATABASE_PATH = originalDatabasePath;
+    delete (globalThis as {appDatabase?: unknown}).appDatabase;
+  });
+
+  it('deve preservar a assinatura antiga com o e-mail em branco', () => {
+    expect(repository.listSignatures()).toEqual([
+      {
+        id: 1,
+        name: 'Maria Silva',
+        cpf: '52998224725',
+        email: '',
+        city: 'São Luís',
+        receipt: 'PEC-ANTIGA123',
+        proposalHash: 'proposta-antiga',
+        entryHash: buildEntryHash({prevHash: '', ...LEGACY_SIGNATURE}),
+        createdAt: '2026-09-01 12:00:00',
+      },
+    ]);
+  });
+
+  it('deve manter a cadeia de integridade válida após a migração', () => {
+    expect(
+      verifySignatureChain(repository.listSignatureEntries()),
+    ).toMatchObject({total: 1, isValid: true, brokenAtId: null});
+  });
+
+  it('deve aceitar assinatura nova com e-mail ao lado da antiga', () => {
+    repository.appendSignature(
+      {
+        name: 'João Pedro',
+        cpf: '11144477735',
+        email: 'joao@exemplo.com',
+        city: 'Imperatriz',
+        receipt: 'PEC-NOVA12345',
+        ipHash: 'hash',
+        userAgent: 'jest',
+        proposalHash: 'proposta',
+        documentHash: 'documento',
+        consentText: 'consentimento',
+        readingText: 'leitura',
+        createdAt: '2026-09-21 12:00:00',
+      },
+      () => 'hash-da-entrada',
+    );
+
+    expect(repository.getSignatureByEmail('joao@exemplo.com')?.receipt).toBe(
+      'PEC-NOVA12345',
+    );
+  });
+
+  it('deve recusar segunda assinatura com o mesmo e-mail', () => {
+    expect(() =>
+      repository.appendSignature(
+        {
+          name: 'Ana Souza',
+          cpf: '05745650354',
+          email: 'joao@exemplo.com',
+          city: 'Bacabal',
+          receipt: 'PEC-OUTRA1234',
+          ipHash: 'hash',
+          userAgent: 'jest',
+          proposalHash: 'proposta',
+          documentHash: 'documento',
+          consentText: 'consentimento',
+          readingText: 'leitura',
+          createdAt: '2026-09-21 13:00:00',
+        },
+        () => 'outro-hash',
+      ),
+    ).toThrow();
+  });
+
+  it('não deve rodar de novo em um banco já migrado', () => {
+    expect(loadRepository(databasePath).listSignatures()).toHaveLength(2);
   });
 });

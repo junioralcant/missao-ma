@@ -47,8 +47,16 @@ export const buildProposalHash = (
   documentHash: string,
 ): string => sha256([title, summary, documentUrl, documentHash].join('|'));
 
-export const nowUtc = (): string =>
-  new Date().toISOString().slice(0, 19).replace('T', ' ');
+const toUtcDateTime = (date: Date): string =>
+  date.toISOString().slice(0, 19).replace('T', ' ');
+
+export const nowUtc = (): string => toUtcDateTime(new Date());
+
+export const utcAfter = (milliseconds: number): string =>
+  toUtcDateTime(new Date(Date.now() + milliseconds));
+
+export const parseUtc = (utcDateTime: string): number =>
+  new Date(`${utcDateTime.replace(' ', 'T')}Z`).getTime();
 
 export const readClientIp = (headers: Headers): string => {
   const forwarded = headers.get('x-forwarded-for');

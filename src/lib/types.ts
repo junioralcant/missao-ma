@@ -26,6 +26,7 @@ export type Signature = {
   id: number;
   name: string;
   cpf: string;
+  email: string;
   city: string;
   receipt: string;
   proposalHash: string;
@@ -36,6 +37,7 @@ export type Signature = {
 export type SignatureInput = {
   name: string;
   cpf: string;
+  email: string;
   city: string;
   receipt: string;
   ipHash: string;
@@ -159,4 +161,64 @@ export type GroupCoverage = {
   missing: number;
   ratio: number;
   cities: GroupCoverageCity[];
+};
+
+export type EmailDeliveryStatus = 'sent' | 'skipped' | 'failed';
+
+export type EmailMessage = {
+  to: string;
+  subject: string;
+  html: string;
+  text: string;
+};
+
+export type SignatureConfirmationEmail = {
+  name: string;
+  city: string;
+  email: string;
+  token: string;
+  proposalTitle: string;
+};
+
+export type SignatureRequestStatus = 'pending' | 'confirmed';
+
+export type SignatureRequest = {
+  id: number;
+  name: string;
+  cpf: string;
+  email: string;
+  city: string;
+  status: SignatureRequestStatus;
+  ipHash: string;
+  userAgent: string;
+  proposalHash: string;
+  documentHash: string;
+  consentText: string;
+  readingText: string;
+  createdAt: string;
+  expiresAt: string;
+  confirmedAt: string | null;
+  receipt: string | null;
+};
+
+export type SignatureRequestInput = {
+  name: string;
+  cpf: string;
+  email: string;
+  city: string;
+  tokenHash: string;
+  ipHash: string;
+  userAgent: string;
+  proposalHash: string;
+  documentHash: string;
+  consentText: string;
+  readingText: string;
+  createdAt: string;
+  expiresAt: string;
+};
+
+export type SignatureRequestData = {
+  name: string;
+  cpf: string;
+  city: string;
 };

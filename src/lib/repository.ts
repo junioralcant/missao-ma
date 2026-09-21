@@ -9,6 +9,8 @@ import type {
   Signature,
   SignatureEntry,
   SignatureInput,
+  SignatureRequest,
+  SignatureRequestInput,
 } from './types';
 
 type GroupRow = {
@@ -155,6 +157,7 @@ type SignatureRow = {
   id: number;
   name: string;
   cpf: string;
+  email: string | null;
   city: string;
   receipt: string;
   proposal_hash: string;
@@ -201,12 +204,13 @@ type ElectorateSourceRow = {
 };
 
 const SIGNATURE_COLUMNS =
-  'id, name, cpf, city, receipt, proposal_hash, entry_hash, created_at';
+  'id, name, cpf, email, city, receipt, proposal_hash, entry_hash, created_at';
 
 const toSignature = (row: SignatureRow): Signature => ({
   id: row.id,
   name: row.name,
   cpf: row.cpf,
+  email: row.email ?? '',
   city: row.city,
   receipt: row.receipt,
   proposalHash: row.proposal_hash,
@@ -250,12 +254,13 @@ export const appendSignature = (
     database
       .prepare(
         `INSERT INTO signatures
-       (name, cpf, city, receipt, ip_hash, user_agent, proposal_hash, document_hash, consent_text, reading_text, prev_hash, entry_hash, created_at)
-       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+       (name, cpf, email, city, receipt, ip_hash, user_agent, proposal_hash, document_hash, consent_text, reading_text, prev_hash, entry_hash, created_at)
+       VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       )
       .run(
         input.name,
         input.cpf,
+        input.email,
         input.city,
         input.receipt,
         input.ipHash,
@@ -328,6 +333,20 @@ export const getSignatureByCpf = (cpf: string): Signature | null => {
   return row ? toSignature(row) : null;
 };
 
+export const getSignatureById = (id: number): Signature | null => {
+  const row = getDb()
+    .prepare(`SELECT ${SIGNATURE_COLUMNS} FROM signatures WHERE id = ?`)
+    .get(id) as unknown as SignatureRow | undefined;
+  return row ? toSignature(row) : null;
+};
+
+export const getSignatureByEmail = (email: string): Signature | null => {
+  const row = getDb()
+    .prepare(`SELECT ${SIGNATURE_COLUMNS} FROM signatures WHERE email = ?`)
+    .get(email) as unknown as SignatureRow | undefined;
+  return row ? toSignature(row) : null;
+};
+
 export const listSignatures = (): Signature[] =>
   (
     getDb()
@@ -389,4 +408,128 @@ export const setSetting = (key: string, value: string): void => {
      ON CONFLICT (key) DO UPDATE SET value = excluded.value`,
     )
     .run(key, value);
+};
+
+type SignatureRequestRow = {
+  id: number;
+  name: string;
+  cpf: string;
+  email: string;
+  city: string;
+  status: string;
+  ip_hash: string;
+  user_agent: string;
+  proposal_hash: string;
+  document_hash: string;
+  consent_text: string;
+  reading_text: string;
+  created_at: string;
+  expires_at: string;
+  confirmed_at: string | null;
+  receipt: string | null;
+};
+
+const SIGNATURE_REQUEST_COLUMNS =
+  'id, name, cpf, email, city, status, ip_hash, user_agent, proposal_hash, document_hash, consent_text, reading_text, created_at, expires_at, confirmed_at, receipt';
+
+const toSignatureRequest = (row: SignatureRequestRow): SignatureRequest => ({
+  id: row.id,
+  name: row.name,
+  cpf: row.cpf,
+  email: row.email,
+  city: row.city,
+  status: row.status === 'confirmed' ? 'confirmed' : 'pending',
+  ipHash: row.ip_hash,
+  userAgent: row.user_agent,
+  proposalHash: row.proposal_hash,
+  documentHash: row.document_hash,
+  consentText: row.consent_text,
+  readingText: row.reading_text,
+  createdAt: row.created_at,
+  expiresAt: row.expires_at,
+  confirmedAt: row.confirmed_at,
+  receipt: row.receipt,
+});
+
+export const upsertSignatureRequest = (input: SignatureRequestInput): void => {
+  const database = getDb();
+  database.exec('BEGIN IMMEDIATE;');
+  try {
+    database
+      .prepare('DELETE FROM signature_requests WHERE cpf = ? OR email = ?')
+      .run(input.cpf, input.email);
+    database
+      .prepare(
+        `INSERT INTO signature_requests
+       (name, cpf, email, city, token_hash, status, ip_hash, user_agent, proposal_hash, document_hash, consent_text, reading_text, created_at, expires_at)
+       VALUES (?, ?, ?, ?, ?, 'pending', ?, ?, ?, ?, ?, ?, ?, ?)`,
+      )
+      .run(
+        input.name,
+        input.cpf,
+        input.email,
+        input.city,
+        input.tokenHash,
+        input.ipHash,
+        input.userAgent,
+        input.proposalHash,
+        input.documentHash,
+        input.consentText,
+        input.readingText,
+        input.createdAt,
+        input.expiresAt,
+      );
+    database.exec('COMMIT;');
+  } catch (error) {
+    database.exec('ROLLBACK;');
+    throw error;
+  }
+};
+
+export const getSignatureRequestByToken = (
+  tokenHash: string,
+): SignatureRequest | null => {
+  const row = getDb()
+    .prepare(
+      `SELECT ${SIGNATURE_REQUEST_COLUMNS} FROM signature_requests WHERE token_hash = ?`,
+    )
+    .get(tokenHash) as unknown as SignatureRequestRow | undefined;
+  return row ? toSignatureRequest(row) : null;
+};
+
+export const getSignatureRequestByEmail = (
+  email: string,
+): SignatureRequest | null => {
+  const row = getDb()
+    .prepare(
+      `SELECT ${SIGNATURE_REQUEST_COLUMNS} FROM signature_requests WHERE email = ?`,
+    )
+    .get(email) as unknown as SignatureRequestRow | undefined;
+  return row ? toSignatureRequest(row) : null;
+};
+
+export const confirmSignatureRequest = (
+  id: number,
+  receipt: string,
+  confirmedAt: string,
+): void => {
+  getDb()
+    .prepare(
+      "UPDATE signature_requests SET status = 'confirmed', receipt = ?, confirmed_at = ? WHERE id = ?",
+    )
+    .run(receipt, confirmedAt, id);
+};
+
+export const listPendingSignatureRequests = (): SignatureRequest[] =>
+  (
+    getDb()
+      .prepare(
+        `SELECT ${SIGNATURE_REQUEST_COLUMNS} FROM signature_requests
+       WHERE status = 'pending' ORDER BY created_at DESC, id DESC`,
+      )
+      .all() as unknown as SignatureRequestRow[]
+  ).map(toSignatureRequest);
+
+export const deleteSignatureRequestByCpf = (cpf: string): void => {
+  getDb().prepare('DELETE FROM signature_requests WHERE cpf = ?').run(cpf);
 };

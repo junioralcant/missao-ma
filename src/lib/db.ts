@@ -25,6 +25,24 @@ const REGISTRATIONS_TABLE_SCHEMA = `
   );
 `;
 
+const hasColumn = (
+  database: DatabaseSync,
+  table: string,
+  column: string,
+): boolean =>
+  (
+    database.prepare(`PRAGMA table_info(${table})`).all() as unknown as {
+      name: string;
+    }[]
+  ).some(row => row.name === column);
+
+const migrateSignaturesEmail = (database: DatabaseSync): void => {
+  if (hasColumn(database, 'signatures', 'email')) {
+    return;
+  }
+  database.exec('ALTER TABLE signatures ADD COLUMN email TEXT;');
+};
+
 const readRegistrationsSchema = (database: DatabaseSync): string | undefined =>
   (
     database
@@ -147,6 +165,7 @@ const createDatabase = (): DatabaseSync => {
       id INTEGER PRIMARY KEY AUTOINCREMENT,
       name TEXT NOT NULL,
       cpf TEXT NOT NULL UNIQUE,
+      email TEXT,
       city TEXT NOT NULL,
       voter_id TEXT,
       receipt TEXT NOT NULL,
@@ -161,6 +180,25 @@ const createDatabase = (): DatabaseSync => {
       created_at TEXT NOT NULL
     );
     CREATE INDEX IF NOT EXISTS signatures_city ON signatures (city);
+    CREATE TABLE IF NOT EXISTS signature_requests (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      name TEXT NOT NULL,
+      cpf TEXT NOT NULL UNIQUE,
+      email TEXT NOT NULL UNIQUE,
+      city TEXT NOT NULL,
+      token_hash TEXT NOT NULL UNIQUE,
+      status TEXT NOT NULL,
+      ip_hash TEXT NOT NULL,
+      user_agent TEXT NOT NULL,
+      proposal_hash TEXT NOT NULL,
+      document_hash TEXT NOT NULL,
+      consent_text TEXT NOT NULL,
+      reading_text TEXT NOT NULL,
+      created_at TEXT NOT NULL,
+      expires_at TEXT NOT NULL,
+      confirmed_at TEXT,
+      receipt TEXT
+    );
     CREATE TABLE IF NOT EXISTS proposal_versions (
       hash TEXT PRIMARY KEY,
       title TEXT NOT NULL,
@@ -180,6 +218,10 @@ const createDatabase = (): DatabaseSync => {
       signature TEXT NOT NULL
     );
   `);
+  migrateSignaturesEmail(database);
+  database.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS signatures_email ON signatures (email);',
+  );
   syncElectorate(database);
   return database;
 };

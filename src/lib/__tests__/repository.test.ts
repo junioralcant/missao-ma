@@ -1,7 +1,10 @@
 import {getDb} from '../db';
 import {
+  appendSignature,
   clearDefaultGroupLink,
+  confirmSignatureRequest,
   createGroup,
+  deleteSignatureRequestByCpf,
   deleteGroup,
   deleteRegistration,
   getDefaultGroupLink,
@@ -9,11 +12,18 @@ import {
   getGroupById,
   getRegistrationByEmail,
   getRegistrationByWhatsapp,
+  getSignatureByEmail,
+  getSignatureById,
+  getSignatureRequestByEmail,
+  getSignatureRequestByToken,
   listGroups,
+  listPendingSignatureRequests,
   listRegistrations,
+  listSignatures,
   setDefaultGroupLink,
   updateGroupLink,
   upsertRegistration,
+  upsertSignatureRequest,
 } from '../repository';
 
 describe('repository', () => {
@@ -240,5 +250,165 @@ describe('grupo padrão', () => {
     setDefaultGroupLink('https://chat.whatsapp.com/Padrao1');
     clearDefaultGroupLink();
     expect(getDefaultGroupLink()).toBe(null);
+  });
+});
+
+describe('repository — pedidos de assinatura', () => {
+  const baseRequest = {
+    name: 'Maria Silva',
+    cpf: '52998224725',
+    email: 'maria@exemplo.com',
+    city: 'São Luís',
+    tokenHash: 'hash-do-token',
+    ipHash: 'hash-do-ip',
+    userAgent: 'jest',
+    proposalHash: 'proposta',
+    documentHash: 'documento',
+    consentText: 'consentimento',
+    readingText: 'leitura',
+    createdAt: '2026-09-21 10:00:00',
+    expiresAt: '2026-09-23 10:00:00',
+  };
+
+  beforeEach(() => {
+    getDb().exec('DELETE FROM signatures; DELETE FROM signature_requests;');
+  });
+
+  it('deve guardar o pedido como pendente', () => {
+    upsertSignatureRequest(baseRequest);
+
+    expect(getSignatureRequestByEmail('maria@exemplo.com')).toMatchObject({
+      name: 'Maria Silva',
+      cpf: '52998224725',
+      city: 'São Luís',
+      status: 'pending',
+      confirmedAt: null,
+      receipt: null,
+    });
+  });
+
+  it('deve recuperar o pedido pelo hash do token', () => {
+    upsertSignatureRequest(baseRequest);
+
+    expect(getSignatureRequestByToken('hash-do-token')?.email).toBe(
+      'maria@exemplo.com',
+    );
+    expect(getSignatureRequestByToken('outro-hash')).toBeNull();
+  });
+
+  it('deve sobrescrever o pedido do mesmo e-mail', () => {
+    upsertSignatureRequest(baseRequest);
+    upsertSignatureRequest({
+      ...baseRequest,
+      cpf: '11144477735',
+      city: 'Imperatriz',
+      tokenHash: 'novo-hash',
+    });
+
+    expect(getSignatureRequestByEmail('maria@exemplo.com')).toMatchObject({
+      cpf: '11144477735',
+      city: 'Imperatriz',
+    });
+    expect(getSignatureRequestByToken('hash-do-token')).toBeNull();
+    expect(listPendingSignatureRequests()).toHaveLength(1);
+  });
+
+  it('deve sobrescrever o pedido do mesmo CPF com outro e-mail', () => {
+    upsertSignatureRequest(baseRequest);
+    upsertSignatureRequest({
+      ...baseRequest,
+      email: 'maria.silva@exemplo.com',
+      tokenHash: 'novo-hash',
+    });
+
+    expect(getSignatureRequestByEmail('maria@exemplo.com')).toBeNull();
+    expect(listPendingSignatureRequests()).toHaveLength(1);
+  });
+
+  it('deve marcar o pedido como confirmado', () => {
+    upsertSignatureRequest(baseRequest);
+    const pending = getSignatureRequestByEmail('maria@exemplo.com');
+
+    confirmSignatureRequest(
+      Number(pending?.id),
+      'PEC-ABCDE12345',
+      '2026-09-21 11:00:00',
+    );
+
+    expect(getSignatureRequestByEmail('maria@exemplo.com')).toMatchObject({
+      status: 'confirmed',
+      receipt: 'PEC-ABCDE12345',
+      confirmedAt: '2026-09-21 11:00:00',
+    });
+  });
+
+  it('não deve listar pedido confirmado entre os pendentes', () => {
+    upsertSignatureRequest(baseRequest);
+    const pending = getSignatureRequestByEmail('maria@exemplo.com');
+
+    confirmSignatureRequest(
+      Number(pending?.id),
+      'PEC-ABCDE12345',
+      '2026-09-21 11:00:00',
+    );
+
+    expect(listPendingSignatureRequests()).toHaveLength(0);
+  });
+
+  it('deve remover o pedido pelo CPF', () => {
+    upsertSignatureRequest(baseRequest);
+
+    deleteSignatureRequestByCpf('52998224725');
+
+    expect(getSignatureRequestByEmail('maria@exemplo.com')).toBeNull();
+  });
+
+  it('deve recuperar assinatura pelo e-mail', () => {
+    appendSignature(
+      {
+        name: 'Maria Silva',
+        cpf: '52998224725',
+        email: 'maria@exemplo.com',
+        city: 'São Luís',
+        receipt: 'PEC-ABCDE12345',
+        ipHash: 'hash',
+        userAgent: 'jest',
+        proposalHash: 'proposta',
+        documentHash: 'documento',
+        consentText: 'consentimento',
+        readingText: 'leitura',
+        createdAt: '2026-09-21 11:00:00',
+      },
+      () => 'hash-da-entrada',
+    );
+
+    expect(getSignatureByEmail('maria@exemplo.com')?.receipt).toBe(
+      'PEC-ABCDE12345',
+    );
+    expect(getSignatureByEmail('ninguem@exemplo.com')).toBeNull();
+  });
+
+  it('deve recuperar assinatura pelo id', () => {
+    appendSignature(
+      {
+        name: 'Maria Silva',
+        cpf: '52998224725',
+        email: 'maria@exemplo.com',
+        city: 'São Luís',
+        receipt: 'PEC-ABCDE12345',
+        ipHash: 'hash',
+        userAgent: 'jest',
+        proposalHash: 'proposta',
+        documentHash: 'documento',
+        consentText: 'consentimento',
+        readingText: 'leitura',
+        createdAt: '2026-09-21 11:00:00',
+      },
+      () => 'hash-da-entrada',
+    );
+    const [signature] = listSignatures();
+
+    expect(getSignatureById(signature.id)?.cpf).toBe('52998224725');
+    expect(getSignatureById(999)).toBeNull();
   });
 });

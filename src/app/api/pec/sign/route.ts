@@ -1,20 +1,25 @@
 import {NextResponse} from 'next/server';
-import {isValidCpf, normalizeCpf} from '@/lib/cpf';
 import {SIGNATURE_CONSENT_TEXT, SIGNATURE_READING_TEXT} from '@/lib/consent';
+import {isValidCpf, normalizeCpf} from '@/lib/cpf';
+import {isValidEmail, normalizeEmail} from '@/lib/email';
+import {sendEmail} from '@/lib/mailer';
 import {getProposal} from '@/lib/proposal';
 import {
-  appendSignature,
+  deleteSignatureRequestByCpf,
   getElectorate,
   getSignatureByCpf,
+  getSignatureByEmail,
+  getSignatureRequestByEmail,
   saveProposalVersion,
+  upsertSignatureRequest,
 } from '@/lib/repository';
+import {hashIp, nowUtc, readClientIp, utcAfter} from '@/lib/signature';
+import {buildSignatureConfirmationEmail} from '@/lib/signatureEmail';
 import {
-  buildEntryHash,
-  buildReceipt,
-  hashIp,
-  nowUtc,
-  readClientIp,
-} from '@/lib/signature';
+  SIGNATURE_REQUEST_TTL_MS,
+  shouldResendConfirmation,
+} from '@/lib/signatureRequest';
+import {createSignatureToken, hashSignatureToken} from '@/lib/signatureToken';
 import {MIN_NAME_LENGTH, isMaranhaoMunicipality} from '@/lib/validation';
 
 const UNKNOWN_USER_AGENT = 'desconhecido';
@@ -23,6 +28,9 @@ export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const name = typeof body?.name === 'string' ? body.name.trim() : '';
   const cpf = normalizeCpf(typeof body?.cpf === 'string' ? body.cpf : '');
+  const email = normalizeEmail(
+    typeof body?.email === 'string' ? body.email : '',
+  );
   const city = typeof body?.city === 'string' ? body.city.trim() : '';
   const consent = body?.consent === true;
   const hasReadDocument = body?.hasReadDocument === true;
@@ -35,6 +43,9 @@ export async function POST(request: Request) {
   }
   if (!isValidCpf(cpf)) {
     return NextResponse.json({error: 'CPF inválido.'}, {status: 400});
+  }
+  if (!isValidEmail(email)) {
+    return NextResponse.json({error: 'E-mail inválido.'}, {status: 400});
   }
   if (!isMaranhaoMunicipality(city)) {
     return NextResponse.json(
@@ -70,40 +81,58 @@ export async function POST(request: Request) {
     });
   }
 
-  const receipt = buildReceipt(cpf);
-  const proposal = getProposal();
-  const proposalHash = proposal.hash;
+  if (getSignatureByEmail(email)) {
+    return NextResponse.json(
+      {error: 'Este e-mail já foi usado para assinar a proposta.'},
+      {status: 409},
+    );
+  }
+
   const createdAt = nowUtc();
+  const pendingRequest = getSignatureRequestByEmail(email);
+  if (!shouldResendConfirmation(pendingRequest, {name, cpf, city}, createdAt)) {
+    return NextResponse.json({email, alreadySigned: false, resent: false});
+  }
+
+  const token = createSignatureToken();
+  const proposal = getProposal();
 
   saveProposalVersion({...proposal, createdAt});
+  upsertSignatureRequest({
+    name,
+    cpf,
+    email,
+    city,
+    tokenHash: hashSignatureToken(token),
+    ipHash: hashIp(readClientIp(request.headers)),
+    userAgent: request.headers.get('user-agent') ?? UNKNOWN_USER_AGENT,
+    proposalHash: proposal.hash,
+    documentHash: proposal.documentHash,
+    consentText: SIGNATURE_CONSENT_TEXT,
+    readingText: SIGNATURE_READING_TEXT,
+    createdAt,
+    expiresAt: utcAfter(SIGNATURE_REQUEST_TTL_MS),
+  });
 
-  appendSignature(
-    {
+  const delivery = await sendEmail(
+    buildSignatureConfirmationEmail({
       name,
-      cpf,
       city,
-      receipt,
-      ipHash: hashIp(readClientIp(request.headers)),
-      userAgent: request.headers.get('user-agent') ?? UNKNOWN_USER_AGENT,
-      proposalHash,
-      documentHash: proposal.documentHash,
-      consentText: SIGNATURE_CONSENT_TEXT,
-      readingText: SIGNATURE_READING_TEXT,
-      createdAt,
-    },
-    prevHash =>
-      buildEntryHash({
-        prevHash,
-        name,
-        cpf,
-        city,
-        proposalHash,
-        documentHash: proposal.documentHash,
-        consentText: SIGNATURE_CONSENT_TEXT,
-        readingText: SIGNATURE_READING_TEXT,
-        createdAt,
-      }),
+      email,
+      token,
+      proposalTitle: proposal.title,
+    }),
   );
+  if (delivery === 'failed') {
+    deleteSignatureRequestByCpf(cpf);
+    return NextResponse.json(
+      {
+        error:
+          'Não foi possível enviar o e-mail de confirmação. Tente novamente.',
+      },
+      {status: 502},
+    );
+  }
 
-  return NextResponse.json({receipt, city, proposalHash, alreadySigned: false});
+  return NextResponse.json({email, alreadySigned: false, resent: true});
 }
