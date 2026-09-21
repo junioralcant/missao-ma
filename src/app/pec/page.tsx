@@ -123,8 +123,9 @@ export default function PecPage() {
         </section>
 
         <p className="footer-note">
-          Seu nome, CPF e município são armazenados exclusivamente para instruir
-          o protocolo da proposta na Assembleia Legislativa do Maranhão.
+          Seu nome, CPF, e-mail e município são armazenados exclusivamente para
+          instruir o protocolo da proposta na Assembleia Legislativa do
+          Maranhão. O e-mail é usado para confirmar a assinatura.
         </p>
       </main>
     </>

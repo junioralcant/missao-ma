@@ -22,6 +22,7 @@ export async function GET(request: Request) {
     [
       escapeCsvField(signature.name),
       formatCpf(signature.cpf),
+      escapeCsvField(signature.email),
       escapeCsvField(signature.city),
       signature.receipt,
       signature.proposalHash,
@@ -31,7 +32,7 @@ export async function GET(request: Request) {
   );
   const csv =
     '﻿' +
-    `Nome;CPF;Município;Protocolo;Hash da minuta;Hash do registro;Data (UTC)\n${rows.join('\n')}\n`;
+    `Nome;CPF;E-mail;Município;Protocolo;Hash da minuta;Hash do registro;Data (UTC)\n${rows.join('\n')}\n`;
 
   return new NextResponse(csv, {
     headers: {

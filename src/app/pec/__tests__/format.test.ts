@@ -1,4 +1,9 @@
-import {formatNumber, formatPercent, formatRatio} from '../format';
+import {
+  formatDateTime,
+  formatNumber,
+  formatPercent,
+  formatRatio,
+} from '../format';
 
 describe('format', () => {
   describe('formatNumber', () => {
@@ -29,6 +34,20 @@ describe('format', () => {
     it('deve devolver 0% quando a meta é zero e a divisão não é finita', () => {
       expect(formatPercent(0 / 0)).toBe('0%');
       expect(formatPercent(1 / 0)).toBe('0%');
+    });
+  });
+
+  describe('formatDateTime', () => {
+    it('deve interpretar a data guardada como UTC', () => {
+      expect(formatDateTime('2026-09-21 12:00:00')).toBe(
+        new Date(Date.UTC(2026, 8, 21, 12, 0, 0)).toLocaleString('pt-BR'),
+      );
+    });
+
+    it('deve exibir data e hora no formato pt-BR', () => {
+      expect(formatDateTime('2026-09-21 12:00:00')).toMatch(
+        /^\d{2}\/\d{2}\/\d{4},? \d{2}:\d{2}:\d{2}$/,
+      );
     });
   });
 });

@@ -15,12 +15,14 @@ import {
   countSignaturesByCity,
   countSignaturesByProposalHash,
   getElectorate,
+  listPendingSignatureRequests,
   listProposalVersions,
   listSignatureEntries,
   listSignatures,
 } from '@/lib/repository';
 import {isAdminRequest} from '@/lib/session';
 import {IntegrityCard} from './components/IntegrityCard';
+import {PendingSignaturesTable} from './components/PendingSignaturesTable';
 import {ProposalCard} from './components/ProposalCard';
 import {SignaturesTable} from './components/SignaturesTable';
 
@@ -120,6 +122,10 @@ export default function AdminPecPage() {
 
         <section className="card">
           <SignaturesTable signatures={signatures} />
+        </section>
+
+        <section className="card">
+          <PendingSignaturesTable requests={listPendingSignatureRequests()} />
         </section>
 
         <section className="card">

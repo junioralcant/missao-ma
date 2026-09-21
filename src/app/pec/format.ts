@@ -15,3 +15,6 @@ export const formatRatio = (value: number): string =>
 
 export const formatPercent = (value: number): string =>
   Number.isFinite(value) ? `${Math.min(value, FULL_BAR) * 100}%` : '0%';
+
+export const formatDateTime = (utcDateTime: string): string =>
+  new Date(`${utcDateTime.replace(' ', 'T')}Z`).toLocaleString(LOCALE);

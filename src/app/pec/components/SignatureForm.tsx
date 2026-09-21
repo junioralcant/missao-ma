@@ -6,6 +6,8 @@ import {CityPicker} from '@/app/components/CityPicker';
 import {findCityByName} from '@/lib/cities';
 import {SIGNATURE_CONSENT_TEXT, SIGNATURE_READING_TEXT} from '@/lib/consent';
 import {formatCpf, isValidCpf} from '@/lib/cpf';
+import {isValidEmail, sanitizeEmail} from '@/lib/email';
+import {SignatureReceipt} from './SignatureReceipt';
 
 type SignatureFormProps = {
   cities: string[];
@@ -14,8 +16,9 @@ type SignatureFormProps = {
 };
 
 type SignatureResult = {
-  receipt: string;
-  city: string;
+  email?: string;
+  receipt?: string;
+  city?: string;
   alreadySigned: boolean;
 };
 
@@ -26,6 +29,7 @@ export const SignatureForm = ({
 }: SignatureFormProps) => {
   const [name, setName] = useState('');
   const [cpf, setCpf] = useState('');
+  const [email, setEmail] = useState('');
   const [city, setCity] = useState('');
   const [hasReadDocument, setHasReadDocument] = useState(false);
   const [consent, setConsent] = useState(false);
@@ -39,6 +43,11 @@ export const SignatureForm = ({
 
     if (!isValidCpf(cpf)) {
       setError('CPF inválido. Confira os números digitados.');
+      return;
+    }
+
+    if (!isValidEmail(email)) {
+      setError('E-mail inválido. Confira o endereço digitado.');
       return;
     }
 
@@ -56,6 +65,7 @@ export const SignatureForm = ({
         body: JSON.stringify({
           name,
           cpf,
+          email,
           city: selectedCity,
           consent,
           hasReadDocument,
@@ -74,21 +84,29 @@ export const SignatureForm = ({
     }
   };
 
+  if (result?.alreadySigned && result.receipt && result.city) {
+    return (
+      <SignatureReceipt
+        message="Você já havia assinado esta proposta. Sua assinatura continua valendo."
+        receipt={result.receipt}
+        city={result.city}
+      />
+    );
+  }
+
   if (result) {
     return (
       <div>
         <div className="alert alert--success">
-          {result.alreadySigned
-            ? 'Você já havia assinado esta proposta. Sua assinatura continua valendo.'
-            : 'Assinatura registrada. Obrigado por apoiar a proposta!'}
+          Enviamos um e-mail de confirmação. A assinatura só é registrada depois
+          que você clicar em <strong>Assinar PEC</strong> na mensagem.
         </div>
-        <div className="success-city-label">Protocolo da assinatura</div>
-        <div className="receipt-code">{result.receipt}</div>
-        <div className="success-city-label">Município de votação</div>
-        <div className="success-city-name">{result.city}</div>
-        <Link className="btn" href="/pec/painel">
-          Ver o andamento da coleta
-        </Link>
+        <div className="success-city-label">E-mail enviado para</div>
+        <div className="success-city-name">{result.email}</div>
+        <p className="muted">
+          O link vale por 48 horas. Se a mensagem não chegar em alguns minutos,
+          confira a caixa de spam ou preencha o formulário de novo.
+        </p>
       </div>
     );
   }
@@ -117,6 +135,19 @@ export const SignatureForm = ({
           placeholder="000.000.000-00"
           inputMode="numeric"
           maxLength={14}
+          required
+        />
+      </div>
+      <div className="field">
+        <label htmlFor="signature-email">E-mail</label>
+        <input
+          id="signature-email"
+          type="email"
+          value={email}
+          onChange={event => setEmail(sanitizeEmail(event.target.value))}
+          placeholder="voce@exemplo.com"
+          inputMode="email"
+          autoComplete="email"
           required
         />
       </div>
@@ -177,7 +208,7 @@ export const SignatureForm = ({
         type="submit"
         disabled={isSubmitting || !consent || !hasReadDocument}
       >
-        {isSubmitting ? 'Registrando…' : 'Assinar a proposta'}
+        {isSubmitting ? 'Enviando…' : 'Assinar a proposta'}
       </button>
     </form>
   );

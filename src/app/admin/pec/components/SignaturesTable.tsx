@@ -2,15 +2,13 @@
 
 import {useState} from 'react';
 import {ConfirmDialog} from '@/app/admin/components/ConfirmDialog';
+import {formatDateTime} from '@/app/pec/format';
 import {formatCpf} from '@/lib/cpf';
 import type {Signature} from '@/lib/types';
 
 type SignaturesTableProps = {
   signatures: Signature[];
 };
-
-const formatDateTime = (utcDateTime: string): string =>
-  new Date(`${utcDateTime.replace(' ', 'T')}Z`).toLocaleString('pt-BR');
 
 export const SignaturesTable = ({
   signatures: initialSignatures,
@@ -74,6 +72,7 @@ export const SignaturesTable = ({
               <tr>
                 <th>Nome</th>
                 <th>CPF</th>
+                <th>E-mail</th>
                 <th>Município</th>
                 <th>Protocolo</th>
                 <th>Data</th>
@@ -85,6 +84,7 @@ export const SignaturesTable = ({
                 <tr key={signature.id}>
                   <td>{signature.name}</td>
                   <td className="mono">{formatCpf(signature.cpf)}</td>
+                  <td>{signature.email}</td>
                   <td>{signature.city}</td>
                   <td className="mono">{signature.receipt}</td>
                   <td className="mono">

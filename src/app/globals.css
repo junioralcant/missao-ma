@@ -924,3 +924,10 @@ input[readonly] {
     flex: 0 0 auto;
   }
 }
+
+.confirm-intro {
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin-bottom: 20px;
+}
