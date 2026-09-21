@@ -86,12 +86,31 @@ O script extrai o texto (descartando os cabeçalhos repetidos de página e reuni
 
 ### Página de assinatura (`/pec`)
 
-- Nome completo, CPF (mesma validação de dígitos verificadores) e município de votação.
+- Nome completo, CPF (mesma validação de dígitos verificadores), e-mail e município de votação.
 - **Duas confirmações obrigatórias**: que leu a íntegra da proposta e a declaração de subscrição + consentimento LGPD. O botão só habilita com as duas marcadas, e o servidor recusa se faltar qualquer uma.
 - Link para ler a proposta e para baixar o `.docx` logo acima das confirmações.
 - **Um CPF, uma assinatura**: reenvio devolve o mesmo protocolo em vez de duplicar.
+- **Um e-mail, uma assinatura**: e-mail já usado em assinatura confirmada é recusado (409).
 - Cada assinatura recebe um **protocolo** (`PEC-XXXXXXXXXX`), derivado do CPF por HMAC — estável, conferível e sem expor o CPF.
 - Trilha de auditoria: data/hora, user-agent e **hash HMAC do IP** (o IP em claro nunca é gravado).
+
+### Confirmação por e-mail (double opt-in)
+
+Enviar o formulário **não** assina nada. O fluxo é:
+
+1. `POST /api/pec/sign` valida os dados, grava um **pedido pendente** em `signature_requests` e dispara um e-mail com o botão **Assinar PEC**.
+2. O botão leva para `/pec/confirmar/<token>`, que mostra nome, município e e-mail para conferência.
+3. `POST /api/pec/confirm` registra a assinatura na cadeia (`signatures`) e devolve o protocolo.
+
+Detalhes que importam:
+
+- **Só assinatura confirmada conta** — pendente não entra na cadeia, no painel público nem nas metas constitucionais.
+- **Token de 32 bytes**, guardado apenas como SHA-256: quem tem acesso ao banco não consegue forjar o link. Vale **48 horas**.
+- **Pendente pode ser sobrescrito**: refazer o cadastro com o mesmo e-mail (ou o mesmo CPF) substitui os dados e invalida o link anterior. Já **confirmado** bloqueia o e-mail de vez.
+- **Repetir o mesmo cadastro em menos de 60s não reenvia** o e-mail; mudar qualquer dado gera um novo link.
+- Se o Resend falhar, o pedido pendente é desfeito e a rota responde 502 — sem pendência órfã.
+- Abrir o link duas vezes é inofensivo: a segunda vez devolve o mesmo protocolo.
+- Sem `RESEND_API_KEY` no ambiente, nada é enviado e o link cai no console — é assim que o fluxo roda em desenvolvimento e nos testes.
 
 ### Como funciona a assinatura eletrônica
 
@@ -109,7 +128,7 @@ O encadeamento torna a coleta **à prova de adulteração**: cada assinatura car
 
 Como o título, a ementa e o arquivo entram no hash, qualquer troca gera uma **nova versão**, e o admin mostra quantas assinaturas pertencem a cada versão. Ninguém "herda" assinaturas dadas a outro texto — nem trocando o `.docx`.
 
-**O que isso não resolve:** nada prova que quem digitou é o dono do CPF. Reforços possíveis, em ordem de esforço: confirmação por SMS/e-mail (prova posse do canal) e login gov.br (assinatura eletrônica avançada, identidade verificada na origem, mas exige credenciamento OAuth de semanas).
+**O que isso não resolve:** nada prova que quem digitou é o dono do CPF. A confirmação por e-mail já cobre parte disso — prova a posse do canal e impede assinatura em massa com endereços inventados. O reforço seguinte seria login gov.br (assinatura eletrônica avançada, identidade verificada na origem, mas exige credenciamento OAuth de semanas).
 
 ### Painel público (`/pec/painel`)
 
@@ -120,7 +139,8 @@ Progresso dos três requisitos em cartões, e a tabela dos 217 municípios com e
 - Tabela de conformidade: exigido × atual × situação para cada requisito.
 - **Integridade da coleta**: verificação da cadeia de hashes, hash final para registro externo e lista das versões da minuta com quantas assinaturas cada uma recebeu.
 - **Proposta**: título, ementa e link da íntegra da minuta, exibidos na página pública (o teor da PEC não está no ofício, por isso é configurável).
-- Lista de assinaturas com exportação CSV (inclui hash da minuta e hash do registro, para conferência independente) e remoção individual.
+- Lista de assinaturas com exportação CSV (inclui e-mail, hash da minuta e hash do registro, para conferência independente) e remoção individual. Remover uma assinatura também apaga o pedido correspondente, liberando o e-mail e o CPF para assinar de novo.
+- **Aguardando confirmação**: pedidos pendentes com e-mail, município, data do pedido e prazo de expiração — separados do total oficial.
 
 ### ⚠️ Eleitorado: substituir os números provisórios
 
@@ -160,9 +180,9 @@ src/
 │   └── api/
 │       ├── register/                  # POST cadastro público
 │       └── admin/                     # login, logout, groups (CRUD), registrations (+CSV)
-│       ├── pec/                       # sign (POST), progress (GET)
+│       ├── pec/                       # sign (POST), confirm (POST), progress (GET)
 │       └── admin/pec/                 # signatures (+CSV), proposal, integrity
-├── app/pec/                           # página de assinatura + painel público
+├── app/pec/                           # página de assinatura, confirmação e painel público
 ├── app/admin/pec/                     # admin da PEC
 ├── data/municipios-ma.json            # 217 municípios do MA (IBGE)
 ├── data/eleitorado-ma.json            # eleitorado por município (sincronizado no boot)
@@ -170,7 +190,9 @@ src/
 └── lib/                               # db, repository, phone, email, cpf, session,
                                        # validation, types, coverage (grupos por município),
                                        # pec (metas), electorate (import), signature,
-                                       # proposal, consent, document, integrity
+                                       # proposal, consent, document, integrity,
+                                       # mailer (Resend), signatureEmail, signatureToken,
+                                       # signatureRequest (prazo e reenvio)
 ```
 
 Scripts:
@@ -193,15 +215,23 @@ Suíte Jest (preset `next/jest`), sem mocks de código próprio:
 - `src/lib/__tests__/pec.test.ts` — as três metas (2%, 18%, 0,3%), qualificação por município e a distinção entre meta atingida e proposta apta a protocolo
 - `src/lib/__tests__/signature.test.ts` — protocolo determinístico sem expor CPF e hash do IP
 - `src/lib/__tests__/integrity.test.ts` — detecção de adulteração (inclusive troca do arquivo da minuta e da declaração de leitura), remoção, reordenação e inserção forjada na cadeia
-- `src/app/api/pec/sign/__tests__/` — a rota de assinatura com banco real (protocolo, dedup por CPF, consentimento, validações, vínculo com a minuta e encadeamento)
+- `src/app/api/pec/sign/__tests__/` — a rota de pedido com banco real (pendência criada sem entrar na cadeia, dedup por CPF e por e-mail, sobrescrita do pendente, envio do e-mail, rollback quando o envio falha)
+- `src/app/api/pec/confirm/__tests__/` — a rota de confirmação (registro na cadeia, idempotência, token inválido/expirado, corrida entre CPF e e-mail)
+- `src/lib/__tests__/mailer.test.ts` e `signatureEmail.test.ts` — envio pelo Resend (payload, chave ausente, erro) e montagem do link de confirmação
+- `src/lib/__tests__/signatureToken.test.ts` e `signatureRequest.test.ts` — token irreversível, prazo de 48h e regra de reenvio
+- `src/lib/__tests__/dbMigration.test.ts` — bancos antigos: cadastros com CPF, e-mails repetidos e assinaturas sem a coluna `email` (a cadeia continua válida após a migração)
 
 ## Variáveis de ambiente
 
-| Variável         | Descrição                                                         |
-| ---------------- | ----------------------------------------------------------------- |
-| `ADMIN_PASSWORD` | Senha da área administrativa (obrigatória)                        |
-| `SESSION_SECRET` | Segredo para assinar o cookie de sessão (obrigatória em produção) |
-| `DATABASE_PATH`  | Caminho do arquivo SQLite (opcional; padrão `data/app.db`)        |
+| Variável         | Descrição                                                                            |
+| ---------------- | ------------------------------------------------------------------------------------ |
+| `ADMIN_PASSWORD` | Senha da área administrativa (obrigatória)                                           |
+| `SESSION_SECRET` | Segredo para assinar o cookie de sessão (obrigatória em produção)                    |
+| `DATABASE_PATH`  | Caminho do arquivo SQLite (opcional; padrão `data/app.db`)                           |
+| `RESEND_API_KEY` | Chave do Resend para o e-mail de confirmação (sem ela, o link só aparece no console) |
+| `EMAIL_FROM`     | Remetente das mensagens (padrão `Missão Maranhão <pec@missaoma.com.br>`)             |
+| `EMAIL_REPLY_TO` | Endereço de resposta (opcional)                                                      |
+| `APP_URL`        | Base do link de confirmação enviado por e-mail (padrão `http://localhost:3000`)      |
 
 ## Deploy
 
@@ -227,10 +257,10 @@ O endereço canônico é **`www.missaoma.com.br`** — é o que está impresso n
 
 Os dois hosts são custom domains do serviço `web` no Railway, e **cada um recebe um alvo próprio**:
 
-| Host                  | Registro | Valor                                     |
-| --------------------- | -------- | ----------------------------------------- |
-| `www.missaoma.com.br` | CNAME    | `k2ozjlus.up.railway.app.`                |
-| `missaoma.com.br`     | A        | IP de `zbnfldar.up.railway.app` (`69.46.46.80`) |
+| Host                  | Registro | Valor                                                                             |
+| --------------------- | -------- | --------------------------------------------------------------------------------- |
+| `www.missaoma.com.br` | CNAME    | `k2ozjlus.up.railway.app.`                                                        |
+| `missaoma.com.br`     | A        | IP de `zbnfldar.up.railway.app` (`69.46.46.80`)                                   |
 | `_railway-verify`     | TXT      | `railway-verify=6a7fa9e765d7f7ecce4fb56f6464c59ac8b578e72339f7dbbe47b86ef81f5e1f` |
 
 O apex usa **A** porque CNAME na raiz da zona é proibido pela RFC 1034 e o DNS da HostGator (dns3/dns4.hostgator.com.br) não faz CNAME flattening. O Railway **não promete IP estático**, então esse A é uma aposta consciente: mantenha o **TTL em 300s** para conseguir corrigir rápido se o IP mudar. O TXT `_railway-verify` é o que prova a propriedade e libera o certificado — sem ele o apex não ganha TLS.
@@ -244,6 +274,38 @@ dig +short missaoma.com.br A           # o que o apex realmente aponta
 
 Se os dois divergirem, o apex está quebrado — sintoma: `curl https://missaoma.com.br/` dá timeout enquanto o www responde 200. Migrar o DNS para um provedor com CNAME flattening (Cloudflare) elimina essa classe de problema.
 
+### E-mail (Resend)
+
+Os e-mails da PEC (confirmação de assinatura) saem pelo [Resend](https://resend.com), com o domínio `missaoma.com.br` verificado na região `sa-east-1` e remetente `Missão Maranhão <pec@missaoma.com.br>`.
+
+Registros que a zona precisa ter — no Zone Editor da HostGator o cPanel completa o nome com o domínio sozinho:
+
+| Nome                | Tipo  | Valor                                   | Para que serve                   |
+| ------------------- | ----- | --------------------------------------- | -------------------------------- |
+| `resend._domainkey` | TXT   | chave DKIM (abaixo)                     | assina as mensagens              |
+| `send`              | MX    | `feedback-smtp.sa-east-1.amazonses.com` | prioridade 10; recebe os bounces |
+| `send`              | TXT   | `v=spf1 include:amazonses.com ~all`     | SPF do subdomínio de envio       |
+| `rsend`             | CNAME | `send.forge.rmta.net`                   | MTA do Resend                    |
+
+Valor do DKIM (chave pública, pode ficar versionada):
+
+```
+p=MIGfMA0GCSqGSIb3DQEBAQUAA4GNADCBiQKBgQDP8KUPFhfz1jzXdLRrrJg6rNRony6bK3tWDAweWDfKhIUidJKLFmHoNJ0fsw+kf1xgkpPYcylbUP4jMfA/NUGWHrdzKBMk00b9KIc1HzFJCkF/hnnuWnX0Y2tiUqtJ0Np5MOoKJxzrAQxHRu/wDXv6kvA46eZgevVpYHU5tVDUbQIDAQAB
+```
+
+O SPF fica em `send.missaoma.com.br`, **não na raiz** — por isso não conflita com o e-mail da hospedagem, que continua respondendo pelo MX do apex (`0 missaoma.com.br`). Vale publicar também um DMARC em `_dmarc` (TXT `v=DMARC1; p=none; rua=mailto:<seu e-mail>`): o domínio hoje não tem nenhum, e sem ele não há relatório de quem está usando o remetente.
+
+Para conferir o estado da verificação:
+
+```bash
+curl -s -H "Authorization: Bearer $RESEND_API_KEY" https://api.resend.com/domains
+dig +short resend._domainkey.missaoma.com.br TXT
+```
+
+A chave de API usada aqui é exclusiva deste projeto (`Missao Maranhao`, permissão só de envio, escopo no domínio) — revogar a chave de outro projeto na mesma conta não derruba o envio da PEC.
+
+O plano free do Resend entrega 3.000 e-mails/mês e **100 por dia**, o que serve para desenvolver mas não para a campanha: a meta de 2% do eleitorado são 103.732 assinaturas, uma confirmação por assinante.
+
 ### Cuidados
 
 - **Backup**: o volume guarda dados pessoais (WhatsApp e e-mail nos grupos, CPF na PEC). Configure backup do volume no Railway ou exporte o CSV periodicamente.
@@ -254,9 +316,9 @@ Se os dois divergirem, o apex está quebrado — sintoma: `curl https://missaoma
 
 ## LGPD
 
-O sistema coleta dados pessoais: nome, WhatsApp, e-mail e cidade de atuação nos grupos; nome, CPF e município na PEC. Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
+O sistema coleta dados pessoais: nome, WhatsApp, e-mail e cidade de atuação nos grupos; nome, CPF, e-mail e município na PEC. Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
 
-Na assinatura da PEC, o IP é gravado apenas como hash HMAC (nunca em claro), o protocolo é derivado do CPF sem revelá-lo e o consentimento aceito fica registrado literalmente em cada assinatura. A finalidade declarada é instruir o protocolo da proposta na Assembleia Legislativa — não reutilize a base para outro fim.
+Na assinatura da PEC, o IP é gravado apenas como hash HMAC (nunca em claro), o protocolo é derivado do CPF sem revelá-lo, o token do link de confirmação só existe em hash no banco e o consentimento aceito fica registrado literalmente em cada assinatura. O e-mail serve para confirmar a assinatura e falar com quem assinou sobre a proposta. A finalidade declarada é instruir o protocolo da proposta na Assembleia Legislativa — não reutilize a base para outro fim.
 
 ## Limitação conhecida da coleta
 
