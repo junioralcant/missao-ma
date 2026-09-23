@@ -6,16 +6,23 @@ type ConfirmDialogProps = {
   title: string;
   message: string;
   confirmLabel: string;
+  tone?: 'danger' | 'primary';
   onConfirm: () => void;
   onCancel: () => void;
 };
 
 const CANCEL_LABEL = 'Cancelar';
 
+const CONFIRM_CLASS_NAMES = {
+  danger: 'btn btn--small btn--danger',
+  primary: 'btn btn--small',
+};
+
 export const ConfirmDialog = ({
   title,
   message,
   confirmLabel,
+  tone = 'danger',
   onConfirm,
   onCancel,
 }: ConfirmDialogProps) => {
@@ -56,7 +63,7 @@ export const ConfirmDialog = ({
           {CANCEL_LABEL}
         </button>
         <button
-          className="btn btn--small btn--danger"
+          className={CONFIRM_CLASS_NAMES[tone]}
           type="button"
           onClick={onConfirm}
         >

@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {ConfirmDialog} from '@/app/admin/components/ConfirmDialog';
 import {formatDateTime} from '@/app/pec/format';
 import type {SignatureRequest} from '@/lib/types';
 
@@ -16,8 +17,12 @@ export const PendingSignaturesTable = ({
   const [resentIds, setResentIds] = useState<number[]>([]);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [pendingResend, setPendingResend] = useState<SignatureRequest | null>(
+    null,
+  );
 
   const handleResend = async (request: SignatureRequest) => {
+    setPendingResend(null);
     setSendingId(request.id);
     setError('');
     setNotice('');
@@ -47,6 +52,16 @@ export const PendingSignaturesTable = ({
 
   return (
     <div>
+      {pendingResend ? (
+        <ConfirmDialog
+          title="Reenviar e-mail"
+          message={`Reenviar o e-mail de confirmação para ${pendingResend.email}? O link enviado antes deixa de funcionar e o novo vale por 48 horas.`}
+          confirmLabel="Reenviar e-mail"
+          tone="primary"
+          onConfirm={() => handleResend(pendingResend)}
+          onCancel={() => setPendingResend(null)}
+        />
+      ) : null}
       <div className="admin-header">
         <h2>
           Aguardando confirmação{' '}
@@ -89,7 +104,7 @@ export const PendingSignaturesTable = ({
                       <button
                         className="btn btn--small btn--ghost"
                         disabled={sendingId !== null}
-                        onClick={() => handleResend(request)}
+                        onClick={() => setPendingResend(request)}
                       >
                         {sendingId === request.id
                           ? 'Enviando...'
