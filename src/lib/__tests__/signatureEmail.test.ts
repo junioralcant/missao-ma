@@ -1,6 +1,7 @@
 import {
   buildConfirmationUrl,
   buildSignatureConfirmationEmail,
+  buildSignatureReminderEmail,
 } from '../signatureEmail';
 
 const params = {
@@ -64,5 +65,37 @@ describe('signatureEmail', () => {
     expect(message.html).toContain('Maria Silva');
     expect(message.html).toContain('São Luís');
     expect(message.html).toContain('PEC nº 14, de 2026');
+  });
+});
+
+describe('buildSignatureReminderEmail', () => {
+  const originalEnv = {...process.env};
+
+  afterEach(() => {
+    process.env = {...originalEnv};
+  });
+
+  it('deve avisar no assunto que é um lembrete', () => {
+    expect(buildSignatureReminderEmail(params).subject).toBe(
+      'Lembrete: falta confirmar a sua assinatura da PEC',
+    );
+  });
+
+  it('deve levar o link novo no HTML e no texto', () => {
+    process.env.APP_URL = 'https://missaomaranhao.org.br';
+    const message = buildSignatureReminderEmail(params);
+    const url = 'https://missaomaranhao.org.br/pec/confirmar/abc123';
+
+    expect(message.html).toContain(`href="${url}"`);
+    expect(message.text).toContain(url);
+  });
+
+  it('deve dizer que a assinatura ainda não foi confirmada e que o link substitui o anterior', () => {
+    const message = buildSignatureReminderEmail(params);
+
+    expect(message.text).toContain('ainda não foi confirmada');
+    expect(message.text).toContain('substitui o enviado anteriormente');
+    expect(message.html).toContain('Assinar PEC');
+    expect(message.html).toContain('São Luís');
   });
 });

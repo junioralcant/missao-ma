@@ -508,6 +508,37 @@ export const getSignatureRequestByEmail = (
   return row ? toSignatureRequest(row) : null;
 };
 
+export const getSignatureRequestById = (
+  id: number,
+): SignatureRequest | null => {
+  const row = getDb()
+    .prepare(
+      `SELECT ${SIGNATURE_REQUEST_COLUMNS} FROM signature_requests WHERE id = ?`,
+    )
+    .get(id) as unknown as SignatureRequestRow | undefined;
+  return row ? toSignatureRequest(row) : null;
+};
+
+export const getSignatureRequestTokenHash = (id: number): string | null => {
+  const row = getDb()
+    .prepare('SELECT token_hash FROM signature_requests WHERE id = ?')
+    .get(id) as {token_hash: string} | undefined;
+  return row?.token_hash ?? null;
+};
+
+export const renewSignatureRequestToken = (
+  id: number,
+  tokenHash: string,
+  expiresAt: string,
+): boolean =>
+  Number(
+    getDb()
+      .prepare(
+        "UPDATE signature_requests SET token_hash = ?, expires_at = ? WHERE id = ? AND status = 'pending'",
+      )
+      .run(tokenHash, expiresAt, id).changes,
+  ) > 0;
+
 export const confirmSignatureRequest = (
   id: number,
   receipt: string,
