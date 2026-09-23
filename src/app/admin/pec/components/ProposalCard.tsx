@@ -10,7 +10,6 @@ type ProposalCardProps = {
 export const ProposalCard = ({initialProposal}: ProposalCardProps) => {
   const [title, setTitle] = useState(initialProposal.title);
   const [summary, setSummary] = useState(initialProposal.summary);
-  const [documentUrl, setDocumentUrl] = useState(initialProposal.documentUrl);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -24,7 +23,7 @@ export const ProposalCard = ({initialProposal}: ProposalCardProps) => {
       const response = await fetch('/api/admin/pec/proposal', {
         method: 'PUT',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({title, summary, documentUrl}),
+        body: JSON.stringify({title, summary}),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -66,18 +65,6 @@ export const ProposalCard = ({initialProposal}: ProposalCardProps) => {
             onChange={event => setSummary(event.target.value)}
             rows={4}
             required
-          />
-        </div>
-        <div className="field">
-          <label htmlFor="proposal-document">
-            Link da íntegra da minuta (opcional)
-          </label>
-          <input
-            id="proposal-document"
-            className="input-mono"
-            value={documentUrl}
-            onChange={event => setDocumentUrl(event.target.value)}
-            placeholder="https://…"
           />
         </div>
         <button

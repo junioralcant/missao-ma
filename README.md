@@ -138,7 +138,7 @@ Progresso dos três requisitos em cartões, e a tabela dos 217 municípios com e
 
 - Tabela de conformidade: exigido × atual × situação para cada requisito.
 - **Integridade da coleta**: verificação da cadeia de hashes, hash final para registro externo e lista das versões da minuta com quantas assinaturas cada uma recebeu.
-- **Proposta**: título, ementa e link da íntegra da minuta, exibidos na página pública (o teor da PEC não está no ofício, por isso é configurável).
+- **Proposta**: título e ementa, exibidos na página pública (o teor da PEC não está no ofício, por isso é configurável).
 - Lista de assinaturas com exportação CSV (inclui e-mail, hash da minuta e hash do registro, para conferência independente) e remoção individual. Remover uma assinatura também apaga o pedido correspondente, liberando o e-mail e o CPF para assinar de novo.
 - **Aguardando confirmação**: pedidos pendentes com e-mail, município, data do pedido e prazo de expiração — separados do total oficial.
 
