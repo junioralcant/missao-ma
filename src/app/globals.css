@@ -236,26 +236,28 @@ a:hover {
   flex: 0 0 auto;
   width: 20px;
   height: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.22);
+  border: 2px solid var(--gold);
   border-radius: 5px;
-  background: var(--input-bg);
+  background: rgba(251, 172, 30, 0.1);
+  box-shadow: 0 0 0 3px rgba(251, 172, 30, 0.18);
   margin-top: 2px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: transparent;
   font-size: 14px;
+  font-weight: 700;
   line-height: 1;
 }
 
 .checkbox-input:checked + .checkbox-box {
   border-color: var(--gold);
-  background: rgba(251, 172, 30, 0.12);
-  color: var(--gold);
+  background: var(--gold);
+  color: #000000;
 }
 
 .checkbox-input:focus-visible + .checkbox-box {
-  border-color: var(--gold);
+  box-shadow: 0 0 0 3px var(--white);
 }
 
 .btn {
