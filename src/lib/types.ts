@@ -222,3 +222,66 @@ export type SignatureRequestData = {
   cpf: string;
   city: string;
 };
+
+export type SearchParams = Record<string, string | string[] | undefined>;
+
+export type TablePage<T> = {
+  items: T[];
+  page: number;
+  totalPages: number;
+  totalItems: number;
+  firstItem: number;
+  lastItem: number;
+};
+
+export type EntrySort = 'recent' | 'oldest' | 'name' | 'city';
+
+export type MunicipalitySort =
+  'signatures' | 'electorate' | 'name' | 'progress';
+
+export type MunicipalityStatus = 'all' | 'qualified' | 'pending';
+
+export type SignatureFilters = {
+  name: string;
+  city: string;
+  sort: EntrySort;
+  page: number;
+};
+
+export type SignatureRequestFilters = SignatureFilters & {
+  email: string;
+};
+
+export type MunicipalityFilters = {
+  city: string;
+  status: MunicipalityStatus;
+  sort: MunicipalitySort;
+  page: number;
+};
+
+export type FilterOption<T extends string> = {
+  value: T;
+  label: string;
+};
+
+export type RegistrationFilters = SignatureFilters;
+
+export type GroupCitySort = 'name' | 'registrations';
+
+export type GroupCityStatus = 'all' | 'with-group' | 'without-group';
+
+export type GroupCityFilters = {
+  city: string;
+  status: GroupCityStatus;
+  sort: GroupCitySort;
+  page: number;
+};
+
+export type GroupCityRow = GroupCoverageCity & {
+  registrations: number;
+};
+
+export type SectionTab = {
+  href: string;
+  label: string;
+};

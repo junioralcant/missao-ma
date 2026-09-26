@@ -1,6 +1,7 @@
 'use client';
 
 import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {ConfirmDialog} from '@/app/admin/components/ConfirmDialog';
 import {formatDateTime} from '@/app/pec/format';
 import {formatCpf} from '@/lib/cpf';
@@ -8,12 +9,14 @@ import type {Signature} from '@/lib/types';
 
 type SignaturesTableProps = {
   signatures: Signature[];
+  totalCount: number;
 };
 
 export const SignaturesTable = ({
-  signatures: initialSignatures,
+  signatures,
+  totalCount,
 }: SignaturesTableProps) => {
-  const [signatures, setSignatures] = useState(initialSignatures);
+  const router = useRouter();
   const [error, setError] = useState('');
   const [pendingRemoval, setPendingRemoval] = useState<Signature | null>(null);
 
@@ -30,9 +33,7 @@ export const SignaturesTable = ({
         setError(data.error ?? 'Não foi possível remover a assinatura.');
         return;
       }
-      setSignatures(current =>
-        current.filter(item => item.id !== signature.id),
-      );
+      router.refresh();
     } catch {
       setError('Falha de conexão. Tente novamente.');
     }
@@ -51,9 +52,9 @@ export const SignaturesTable = ({
       ) : null}
       <div className="admin-header">
         <h2>
-          Assinaturas <span className="gold">({signatures.length})</span>
+          Assinaturas <span className="gold">({totalCount})</span>
         </h2>
-        {signatures.length > 0 ? (
+        {totalCount > 0 ? (
           <a
             className="btn btn--small btn--ghost"
             href="/api/admin/pec/signatures?format=csv"
@@ -65,7 +66,11 @@ export const SignaturesTable = ({
       {error ? <div className="alert alert--error">{error}</div> : null}
       <div className="table-wrap">
         {signatures.length === 0 ? (
-          <p className="empty">Nenhuma assinatura registrada ainda.</p>
+          <p className="empty">
+            {totalCount === 0
+              ? 'Nenhuma assinatura registrada ainda.'
+              : 'Nenhuma assinatura encontrada com esses filtros.'}
+          </p>
         ) : (
           <table>
             <thead>

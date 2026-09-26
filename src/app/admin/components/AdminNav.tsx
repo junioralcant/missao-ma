@@ -5,8 +5,22 @@ import {usePathname} from 'next/navigation';
 import {LogoutButton} from './LogoutButton';
 
 const ADMIN_NAV_ITEMS = [
-  {href: '/admin', label: 'Grupos de WhatsApp'},
-  {href: '/admin/pec', label: 'Assinaturas da PEC'},
+  {
+    href: '/admin',
+    label: 'Grupos de WhatsApp',
+    paths: ['/admin', '/admin/cidades', '/admin/cadastros'],
+  },
+  {
+    href: '/admin/pec',
+    label: 'Assinaturas da PEC',
+    paths: [
+      '/admin/pec',
+      '/admin/pec/assinaturas',
+      '/admin/pec/pendentes',
+      '/admin/pec/municipios',
+      '/admin/pec/proposta',
+    ],
+  },
 ];
 
 export const AdminNav = () => {
@@ -16,7 +30,7 @@ export const AdminNav = () => {
     <nav className="admin-nav" aria-label="Painéis administrativos">
       <div className="admin-nav-links">
         {ADMIN_NAV_ITEMS.map(item => {
-          const isActive = pathname === item.href;
+          const isActive = item.paths.includes(pathname);
           return (
             <Link
               key={item.href}

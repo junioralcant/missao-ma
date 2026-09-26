@@ -1,18 +1,21 @@
 'use client';
 
 import {useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {ConfirmDialog} from '@/app/admin/components/ConfirmDialog';
 import {formatDateTime} from '@/app/pec/format';
 import type {SignatureRequest} from '@/lib/types';
 
 type PendingSignaturesTableProps = {
   requests: SignatureRequest[];
+  totalCount: number;
 };
 
 export const PendingSignaturesTable = ({
-  requests: initialRequests,
+  requests,
+  totalCount,
 }: PendingSignaturesTableProps) => {
-  const [requests, setRequests] = useState(initialRequests);
+  const router = useRouter();
   const [sendingId, setSendingId] = useState<number | null>(null);
   const [resentIds, setResentIds] = useState<number[]>([]);
   const [error, setError] = useState('');
@@ -31,16 +34,12 @@ export const PendingSignaturesTable = ({
         `/api/admin/pec/requests/${request.id}/resend`,
         {method: 'POST'},
       );
-      const data = await response.json();
       if (!response.ok) {
+        const data = await response.json();
         setError(data.error ?? 'Não foi possível reenviar o e-mail.');
         return;
       }
-      setRequests(current =>
-        current.map(item =>
-          item.id === request.id ? {...item, expiresAt: data.expiresAt} : item,
-        ),
-      );
+      router.refresh();
       setResentIds(current => [...current, request.id]);
       setNotice(`E-mail reenviado para ${request.email}.`);
     } catch {
@@ -64,8 +63,7 @@ export const PendingSignaturesTable = ({
       ) : null}
       <div className="admin-header">
         <h2>
-          Aguardando confirmação{' '}
-          <span className="gold">({requests.length})</span>
+          Aguardando confirmação <span className="gold">({totalCount})</span>
         </h2>
       </div>
       <p className="muted">
@@ -78,7 +76,11 @@ export const PendingSignaturesTable = ({
       {notice ? <div className="alert alert--success">{notice}</div> : null}
       <div className="table-wrap">
         {requests.length === 0 ? (
-          <p className="empty">Nenhum pedido aguardando confirmação.</p>
+          <p className="empty">
+            {totalCount === 0
+              ? 'Nenhum pedido aguardando confirmação.'
+              : 'Nenhum pedido encontrado com esses filtros.'}
+          </p>
         ) : (
           <table>
             <thead>

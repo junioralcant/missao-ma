@@ -1,44 +1,20 @@
 'use client';
 
-import {FormEvent, useMemo, useRef, useState} from 'react';
+import {FormEvent, ReactNode, useRef, useState} from 'react';
+import {useRouter} from 'next/navigation';
 import {CityPicker} from '@/app/components/CityPicker';
 import municipalities from '@/data/municipios-ma.json';
 import {findCityByName} from '@/lib/cities';
-import {buildGroupCoverage} from '@/lib/coverage';
-import {normalizeSearchText} from '@/lib/text';
-import type {Group, GroupCoverageCity} from '@/lib/types';
+import type {Group, GroupCityRow} from '@/lib/types';
 import {ConfirmDialog} from './ConfirmDialog';
-import {GroupCoverageMeter} from './GroupCoverageMeter';
 
 type GroupsManagerProps = {
-  initialGroups: Group[];
+  cities: GroupCityRow[];
+  filters: ReactNode;
 };
 
-type CoverageFilter = 'todos' | 'com-grupo' | 'sem-grupo';
-
-const FILTER_LABELS: Record<CoverageFilter, string> = {
-  todos: 'Todos',
-  'com-grupo': 'Com grupo',
-  'sem-grupo': 'Sem grupo',
-};
-
-const FILTER_ORDER: CoverageFilter[] = ['todos', 'com-grupo', 'sem-grupo'];
-
-const matchesFilter = (
-  item: GroupCoverageCity,
-  filter: CoverageFilter,
-): boolean => {
-  if (filter === 'com-grupo') {
-    return Boolean(item.group);
-  }
-  if (filter === 'sem-grupo') {
-    return !item.group;
-  }
-  return true;
-};
-
-export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
-  const [groups, setGroups] = useState(initialGroups);
+export const GroupsManager = ({cities, filters}: GroupsManagerProps) => {
+  const router = useRouter();
   const [city, setCity] = useState('');
   const [whatsappLink, setWhatsappLink] = useState('');
   const [editingId, setEditingId] = useState<number | null>(null);
@@ -46,24 +22,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
   const [error, setError] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [pendingRemoval, setPendingRemoval] = useState<Group | null>(null);
-  const [query, setQuery] = useState('');
-  const [filter, setFilter] = useState<CoverageFilter>('todos');
   const linkInputRef = useRef<HTMLInputElement>(null);
-
-  const coverage = useMemo(
-    () => buildGroupCoverage(municipalities as string[], groups),
-    [groups],
-  );
-
-  const visibleCities = useMemo(() => {
-    const normalizedQuery = normalizeSearchText(query.trim());
-    return coverage.cities.filter(
-      item =>
-        matchesFilter(item, filter) &&
-        (!normalizedQuery ||
-          normalizeSearchText(item.city).includes(normalizedQuery)),
-    );
-  }, [coverage, filter, query]);
 
   const handleCreate = async (event: FormEvent) => {
     event.preventDefault();
@@ -85,7 +44,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
         setError(data.error ?? 'Não foi possível cadastrar o grupo.');
         return;
       }
-      setGroups(current => [...current, data.group]);
+      router.refresh();
       setCity('');
       setWhatsappLink('');
     } catch {
@@ -122,9 +81,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
         setError(data.error ?? 'Não foi possível atualizar o link.');
         return;
       }
-      setGroups(current =>
-        current.map(group => (group.id === id ? data.group : group)),
-      );
+      router.refresh();
       setEditingId(null);
     } catch {
       setError('Falha de conexão. Tente novamente.');
@@ -143,7 +100,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
         setError(data.error ?? 'Não foi possível remover o grupo.');
         return;
       }
-      setGroups(current => current.filter(item => item.id !== group.id));
+      router.refresh();
     } catch {
       setError('Falha de conexão. Tente novamente.');
     }
@@ -160,7 +117,6 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
           onCancel={() => setPendingRemoval(null)}
         />
       ) : null}
-      <GroupCoverageMeter coverage={coverage} />
       {error ? <div className="alert alert--error">{error}</div> : null}
       <form className="inline-form" onSubmit={handleCreate}>
         <CityPicker
@@ -192,51 +148,27 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
         </button>
       </form>
 
-      <div className="filter-bar" style={{marginTop: 20}}>
-        <input
-          className="filter-input"
-          value={query}
-          onChange={event => setQuery(event.target.value)}
-          placeholder="Buscar município"
-          aria-label="Buscar município"
-        />
-        <div className="filter-chips" role="group" aria-label="Filtrar cidades">
-          {FILTER_ORDER.map(option => (
-            <button
-              key={option}
-              type="button"
-              className={option === filter ? 'chip chip--active' : 'chip'}
-              onClick={() => setFilter(option)}
-              aria-pressed={option === filter}
-            >
-              {FILTER_LABELS[option]}
-            </button>
-          ))}
-        </div>
-      </div>
-
-      <p className="muted">
-        {visibleCities.length} de {coverage.total} municípios
-      </p>
+      <div className="groups-filters">{filters}</div>
 
       <div className="table-wrap">
         <table>
           <thead>
             <tr>
               <th>Cidade</th>
+              <th>Cadastros</th>
               <th>Link</th>
               <th>Ações</th>
             </tr>
           </thead>
           <tbody>
-            {visibleCities.length === 0 ? (
+            {cities.length === 0 ? (
               <tr>
-                <td colSpan={3} className="muted">
+                <td colSpan={4} className="muted">
                   Nenhum município encontrado.
                 </td>
               </tr>
             ) : (
-              visibleCities.map(({city: cityName, group}) => (
+              cities.map(({city: cityName, group, registrations}) => (
                 <tr key={cityName}>
                   <td>
                     <span
@@ -245,6 +177,7 @@ export const GroupsManager = ({initialGroups}: GroupsManagerProps) => {
                     />
                     {cityName}
                   </td>
+                  <td className="mono">{registrations}</td>
                   <td className="link-cell">
                     {!group ? (
                       <span className="muted">Sem grupo</span>

@@ -305,6 +305,19 @@ a:hover {
   color: var(--gold);
 }
 
+.btn--whatsapp {
+  background: transparent;
+  color: #25d366;
+  border: 1px solid rgba(37, 211, 102, 0.5);
+  font-weight: 600;
+}
+
+.btn--whatsapp:hover {
+  color: #25d366;
+  border-color: #25d366;
+  background: rgba(37, 211, 102, 0.1);
+}
+
 .btn--danger {
   background: transparent;
   color: var(--danger);
@@ -932,4 +945,107 @@ input[readonly] {
   line-height: 1.45;
   color: var(--muted);
   margin-bottom: 20px;
+}
+
+.pec-tabs {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  margin-bottom: 18px;
+  padding-bottom: 4px;
+}
+
+.pec-tab {
+  flex: 0 0 auto;
+  padding: 9px 16px;
+  border-radius: var(--radius-pill);
+  border: 1px solid var(--line-strong);
+  color: var(--text);
+  font-size: 15px;
+  white-space: nowrap;
+}
+
+.pec-tab:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+
+.pec-tab--active,
+.pec-tab--active:hover {
+  border-color: var(--gold);
+  background: var(--gold);
+  color: #000000;
+  font-weight: 600;
+}
+
+.table-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: flex-end;
+  margin-bottom: 18px;
+}
+
+.table-filter {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  flex: 1 1 180px;
+  font-size: 14px;
+  color: var(--muted);
+}
+
+.table-filter .filter-input {
+  flex: none;
+  width: 100%;
+  height: 46px;
+}
+
+.table-filter select.filter-input {
+  appearance: none;
+  padding-right: 38px;
+  background-image: linear-gradient(45deg, transparent 50%, var(--muted) 50%),
+    linear-gradient(135deg, var(--muted) 50%, transparent 50%);
+  background-position:
+    calc(100% - 20px) 50%,
+    calc(100% - 15px) 50%;
+  background-size: 5px 5px;
+  background-repeat: no-repeat;
+  cursor: pointer;
+}
+
+.table-filter-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.table-filter-actions .btn--small {
+  height: 46px;
+  padding: 0 22px;
+  display: inline-flex;
+  align-items: center;
+}
+
+.pagination {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 16px;
+}
+
+.pagination-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+}
+
+.pagination-links .chip {
+  padding: 7px 13px;
+  font-size: 14px;
+}
+
+.groups-filters {
+  margin-top: 24px;
 }

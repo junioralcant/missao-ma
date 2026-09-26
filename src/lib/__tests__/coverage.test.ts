@@ -1,5 +1,5 @@
 import municipalities from '@/data/municipios-ma.json';
-import {buildGroupCoverage} from '../coverage';
+import {buildGroupCoverage, withRegistrationCounts} from '../coverage';
 import type {Group} from '../types';
 
 const cities = municipalities as string[];
@@ -76,5 +76,35 @@ describe('buildGroupCoverage', () => {
       ratio: 0,
       cities: [],
     });
+  });
+});
+
+describe('withRegistrationCounts', () => {
+  it('deve contar os cadastros de cada cidade, ignorando acentos', () => {
+    const rows = withRegistrationCounts(
+      [
+        {city: 'São Luís', group: null},
+        {city: 'Caxias', group: null},
+      ],
+      [
+        {
+          id: 1,
+          name: 'A',
+          whatsapp: '1',
+          email: 'a@x.com',
+          city: 'São Luís',
+          createdAt: '2026-09-01 10:00:00',
+        },
+        {
+          id: 2,
+          name: 'B',
+          whatsapp: '2',
+          email: 'b@x.com',
+          city: 'sao luis',
+          createdAt: '2026-09-01 10:00:00',
+        },
+      ],
+    );
+    expect(rows.map(row => row.registrations)).toEqual([2, 0]);
   });
 });

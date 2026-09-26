@@ -22,3 +22,8 @@ export const formatPhone = (value: string): string => {
 
 export const isValidPhone = (value: string): boolean =>
   MOBILE_PHONE_REGEX.test(normalizePhone(value));
+
+const WHATSAPP_CHAT_URL = 'https://wa.me/';
+
+export const buildWhatsappChatLink = (value: string): string =>
+  `${WHATSAPP_CHAT_URL}${COUNTRY_CODE}${normalizePhone(value)}`;

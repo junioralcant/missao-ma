@@ -1,21 +1,24 @@
 'use client';
 
 import {useState} from 'react';
-import {formatPhone} from '@/lib/phone';
+import {useRouter} from 'next/navigation';
+import {buildWhatsappChatLink, formatPhone} from '@/lib/phone';
 import type {Registration} from '@/lib/types';
 import {ConfirmDialog} from './ConfirmDialog';
 
 type RegistrationsTableProps = {
   registrations: Registration[];
+  totalCount: number;
 };
 
 const formatDateTime = (utcDateTime: string): string =>
   new Date(`${utcDateTime.replace(' ', 'T')}Z`).toLocaleString('pt-BR');
 
 export const RegistrationsTable = ({
-  registrations: initialRegistrations,
+  registrations,
+  totalCount,
 }: RegistrationsTableProps) => {
-  const [registrations, setRegistrations] = useState(initialRegistrations);
+  const router = useRouter();
   const [error, setError] = useState('');
   const [pendingRemoval, setPendingRemoval] = useState<Registration | null>(
     null,
@@ -34,9 +37,7 @@ export const RegistrationsTable = ({
         setError(data.error ?? 'Não foi possível remover o cadastro.');
         return;
       }
-      setRegistrations(current =>
-        current.filter(item => item.id !== registration.id),
-      );
+      router.refresh();
     } catch {
       setError('Falha de conexão. Tente novamente.');
     }
@@ -55,9 +56,9 @@ export const RegistrationsTable = ({
       ) : null}
       <div className="admin-header">
         <h2>
-          Cadastros <span className="gold">({registrations.length})</span>
+          Cadastros <span className="gold">({totalCount})</span>
         </h2>
-        {registrations.length > 0 ? (
+        {totalCount > 0 ? (
           <a
             className="btn btn--small btn--ghost"
             href="/api/admin/registrations?format=csv"
@@ -69,7 +70,11 @@ export const RegistrationsTable = ({
       {error ? <div className="alert alert--error">{error}</div> : null}
       <div className="table-wrap">
         {registrations.length === 0 ? (
-          <p className="empty">Nenhum cadastro recebido ainda.</p>
+          <p className="empty">
+            {totalCount === 0
+              ? 'Nenhum cadastro recebido ainda.'
+              : 'Nenhum cadastro encontrado com esses filtros.'}
+          </p>
         ) : (
           <table>
             <thead>
@@ -94,6 +99,15 @@ export const RegistrationsTable = ({
                   </td>
                   <td>
                     <div className="row-actions">
+                      <a
+                        className="btn btn--small btn--whatsapp"
+                        href={buildWhatsappChatLink(registration.whatsapp)}
+                        target="_blank"
+                        rel="noreferrer"
+                        aria-label={`Conversar com ${registration.name} no WhatsApp`}
+                      >
+                        WhatsApp
+                      </a>
                       <button
                         className="btn btn--small btn--danger"
                         onClick={() => setPendingRemoval(registration)}

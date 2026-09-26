@@ -1,4 +1,9 @@
-import {formatPhone, isValidPhone, normalizePhone} from '../phone';
+import {
+  buildWhatsappChatLink,
+  formatPhone,
+  isValidPhone,
+  normalizePhone,
+} from '../phone';
 
 describe('normalizePhone', () => {
   it('deve manter apenas os dígitos', () => {
@@ -50,5 +55,16 @@ describe('isValidPhone', () => {
   it('deve recusar número incompleto ou vazio', () => {
     expect(isValidPhone('989998877')).toBe(false);
     expect(isValidPhone('')).toBe(false);
+  });
+});
+
+describe('buildWhatsappChatLink', () => {
+  it('deve abrir a conversa com o número no formato internacional', () => {
+    expect(buildWhatsappChatLink('98999887766')).toBe(
+      'https://wa.me/5598999887766',
+    );
+    expect(buildWhatsappChatLink('+55 (98) 99988-7766')).toBe(
+      'https://wa.me/5598999887766',
+    );
   });
 });
