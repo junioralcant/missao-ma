@@ -36,7 +36,7 @@ A senha do admin fica em `.env.local` (`ADMIN_PASSWORD`). Troque antes de public
 
 ### Página pública (`/`)
 
-- Formulário com nome completo, número do WhatsApp (com máscara e validação de DDD + nono dígito), e-mail e cidade de atuação.
+- Formulário com nome completo, número do WhatsApp (com máscara e validação de DDD + nono dígito), e-mail, usuário do Instagram pessoal e cidade de atuação.
 - O select lista todos os 217 municípios do Maranhão. Se a cidade tem grupo próprio, o usuário vai para ele; senão, vai para o **grupo padrão** configurado no admin (o cadastro guarda a cidade real informada).
 - Checkbox de consentimento (LGPD) obrigatório.
 - Ao enviar, o cadastro é salvo e o usuário é redirecionado ao link do grupo. Um botão de fallback aparece caso o redirecionamento automático falhe.
@@ -50,7 +50,7 @@ A senha do admin fica em `.env.local` (`ADMIN_PASSWORD`). Troque antes de public
 - **Cobertura dos 217 municípios**: contador `X de 217` com quantos ainda faltam e barra de progresso, alimentado por `src/lib/coverage.ts`.
 - A tabela lista **todos os 217 municípios** (não só os que já têm grupo), com busca por nome e filtros `Todos` / `Com grupo` / `Sem grupo`. Município sem grupo traz o botão **Cadastrar**, que já preenche a cidade no formulário e leva o cursor para o campo do link.
 - Edição e remoção de links existentes.
-- Tabela com todos os cadastros recebidos (nome, WhatsApp, e-mail, cidade, data) e exportação em CSV.
+- Tabela com todos os cadastros recebidos (nome, WhatsApp, e-mail, Instagram, cidade, data) e exportação em CSV.
 
 ## Plataforma 2 — Assinatura da PEC
 
@@ -316,7 +316,7 @@ O plano free do Resend entrega 3.000 e-mails/mês e **100 por dia**, o que serve
 
 ## LGPD
 
-O sistema coleta dados pessoais: nome, WhatsApp, e-mail e cidade de atuação nos grupos; nome, CPF, e-mail e município na PEC. Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
+O sistema coleta dados pessoais: nome, WhatsApp, e-mail, Instagram e cidade de atuação nos grupos; nome, CPF, e-mail e município na PEC. Mantenha finalidade clara, colete só o necessário e proteja o acesso ao banco e à área administrativa. Os dois formulários incluem consentimento explícito e aviso de finalidade.
 
 Na assinatura da PEC, o IP é gravado apenas como hash HMAC (nunca em claro), o protocolo é derivado do CPF sem revelá-lo, o token do link de confirmação só existe em hash no banco e o consentimento aceito fica registrado literalmente em cada assinatura. O e-mail serve para confirmar a assinatura e falar com quem assinou sobre a proposta. A finalidade declarada é instruir o protocolo da proposta na Assembleia Legislativa — não reutilize a base para outro fim.
 

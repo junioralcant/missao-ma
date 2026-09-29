@@ -3,6 +3,11 @@
 import {FormEvent, useState} from 'react';
 import {findCityByName} from '@/lib/cities';
 import {MAX_EMAIL_LENGTH, isValidEmail, sanitizeEmail} from '@/lib/email';
+import {
+  MAX_INSTAGRAM_INPUT_LENGTH,
+  isValidInstagram,
+  sanitizeInstagram,
+} from '@/lib/instagram';
 import {formatPhone, isValidPhone} from '@/lib/phone';
 import {CityPicker} from './CityPicker';
 
@@ -14,6 +19,7 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
   const [name, setName] = useState('');
   const [whatsapp, setWhatsapp] = useState('');
   const [email, setEmail] = useState('');
+  const [instagram, setInstagram] = useState('');
   const [city, setCity] = useState('');
   const [consent, setConsent] = useState(false);
   const [error, setError] = useState('');
@@ -35,6 +41,13 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
       return;
     }
 
+    if (!isValidInstagram(instagram)) {
+      setError(
+        'Usuário do Instagram inválido. Use apenas letras, números, ponto e sublinhado.',
+      );
+      return;
+    }
+
     const selectedCity = findCityByName(cities, city);
     if (!selectedCity) {
       setError('Selecione uma cidade da lista.');
@@ -46,7 +59,13 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
       const response = await fetch('/api/register', {
         method: 'POST',
         headers: {'Content-Type': 'application/json'},
-        body: JSON.stringify({name, whatsapp, email, city: selectedCity}),
+        body: JSON.stringify({
+          name,
+          whatsapp,
+          email,
+          instagram,
+          city: selectedCity,
+        }),
       });
       const data = await response.json();
       if (!response.ok) {
@@ -129,6 +148,23 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
           required
         />
       </div>
+      <div className="field">
+        <label htmlFor="instagram">Usuário do Instagram pessoal</label>
+        <input
+          id="instagram"
+          value={instagram}
+          onChange={event =>
+            setInstagram(sanitizeInstagram(event.target.value))
+          }
+          placeholder="@seuusuario"
+          autoComplete="off"
+          autoCapitalize="none"
+          autoCorrect="off"
+          spellCheck={false}
+          maxLength={MAX_INSTAGRAM_INPUT_LENGTH}
+          required
+        />
+      </div>
       <CityPicker
         id="city"
         label="Cidade de atuação"
@@ -149,9 +185,9 @@ export const RegistrationForm = ({cities}: RegistrationFormProps) => {
           ✓
         </span>
         <span>
-          Autorizo o armazenamento do meu nome, número de WhatsApp, e-mail e
-          cidade de atuação para controle de participação nos grupos de
-          WhatsApp.
+          Autorizo o armazenamento do meu nome, número de WhatsApp, e-mail,
+          usuário do Instagram e cidade de atuação para controle de participação
+          nos grupos de WhatsApp.
         </span>
       </label>
       <button className="btn" type="submit" disabled={isSubmitting || !consent}>

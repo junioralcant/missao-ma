@@ -1,4 +1,5 @@
 import {NextResponse} from 'next/server';
+import {formatInstagram} from '@/lib/instagram';
 import {formatPhone} from '@/lib/phone';
 import {listRegistrations} from '@/lib/repository';
 import {isAdminRequest} from '@/lib/session';
@@ -23,12 +24,14 @@ export async function GET(request: Request) {
       escapeCsvField(registration.name),
       formatPhone(registration.whatsapp),
       escapeCsvField(registration.email),
+      escapeCsvField(formatInstagram(registration.instagram)),
       escapeCsvField(registration.city),
       registration.createdAt,
     ].join(';'),
   );
   const csv =
-    '\ufeff' + `Nome;WhatsApp;E-mail;Cidade;Data (UTC)\n${rows.join('\n')}\n`;
+    '\ufeff' +
+    `Nome;WhatsApp;E-mail;Instagram;Cidade;Data (UTC)\n${rows.join('\n')}\n`;
 
   return new NextResponse(csv, {
     headers: {

@@ -28,6 +28,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '(98) 99988-7766',
       email: 'Maria.Silva@Exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -40,6 +41,7 @@ describe('POST /api/register', () => {
     expect(registrations).toHaveLength(1);
     expect(registrations[0].whatsapp).toBe('98999887766');
     expect(registrations[0].email).toBe('maria.silva@exemplo.com');
+    expect(registrations[0].instagram).toBe('maria.silva');
   });
 
   it('deve usar o grupo padrão quando a cidade não tem grupo próprio', async () => {
@@ -49,6 +51,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'Caxias',
     });
 
@@ -69,6 +72,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -83,12 +87,14 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
     const response = await postRegister({
       name: 'Maria S. Santos',
       whatsapp: '(98) 99988-7766',
       email: 'maria.santos@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -105,6 +111,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -112,6 +119,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '+55 (98) 99988-7766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'Caxias',
     });
 
@@ -126,6 +134,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -133,6 +142,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -148,6 +158,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -155,6 +166,7 @@ describe('POST /api/register', () => {
       name: 'Joao Pedro',
       whatsapp: '98988776655',
       email: 'Maria@Exemplo.com',
+      instagram: '@joao.pedro',
       city: 'São Luís',
     });
 
@@ -173,6 +185,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -180,6 +193,7 @@ describe('POST /api/register', () => {
       name: 'Joao Pedro',
       whatsapp: '98988776655',
       email: 'maria@exemplo.com',
+      instagram: '@joao.pedro',
       city: 'Caxias',
     });
 
@@ -192,6 +206,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -199,6 +214,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria.nova@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -213,12 +229,14 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
     await postRegister({
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria.nova@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -226,6 +244,7 @@ describe('POST /api/register', () => {
       name: 'Joao Pedro',
       whatsapp: '98988776655',
       email: 'maria@exemplo.com',
+      instagram: '@joao.pedro',
       city: 'São Luís',
     });
 
@@ -238,6 +257,7 @@ describe('POST /api/register', () => {
       name: 'Ma',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -250,6 +270,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '(98) 3221-4455',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -262,6 +283,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo',
+      instagram: '@maria.silva',
       city: 'São Luís',
     });
 
@@ -274,6 +296,112 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria silva@exemplo.com',
+      instagram: '@maria.silva',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(400);
+    expect(listRegistrations()).toHaveLength(0);
+  });
+
+  it('deve atualizar o Instagram do próprio cadastro', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: 'https://www.instagram.com/Maria.Nova/',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(200);
+    const registrations = listRegistrations();
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].instagram).toBe('maria.nova');
+  });
+
+  it('deve recusar Instagram já cadastrado por outro WhatsApp', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Joao Pedro',
+      whatsapp: '98988776655',
+      email: 'joao@exemplo.com',
+      instagram: 'https://www.instagram.com/Maria.Silva/',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Este Instagram já está cadastrado.',
+    });
+    const registrations = listRegistrations();
+    expect(registrations).toHaveLength(1);
+    expect(registrations[0].name).toBe('Maria Silva');
+  });
+
+  it('deve liberar o Instagram antigo depois que a pessoa troca o dela', async () => {
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
+      city: 'São Luís',
+    });
+    await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: '@maria.nova',
+      city: 'São Luís',
+    });
+
+    const response = await postRegister({
+      name: 'Joao Pedro',
+      whatsapp: '98988776655',
+      email: 'joao@exemplo.com',
+      instagram: '@maria.silva',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(200);
+    expect(listRegistrations()).toHaveLength(2);
+  });
+
+  it('deve recusar cadastro sem Instagram', async () => {
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      city: 'São Luís',
+    });
+
+    expect(response.status).toBe(400);
+    await expect(response.json()).resolves.toEqual({
+      error: 'Informe um usuário do Instagram válido.',
+    });
+    expect(listRegistrations()).toHaveLength(0);
+  });
+
+  it('deve recusar Instagram inválido', async () => {
+    const response = await postRegister({
+      name: 'Maria Silva',
+      whatsapp: '98999887766',
+      email: 'maria@exemplo.com',
+      instagram: 'maria silva!',
       city: 'São Luís',
     });
 
@@ -288,6 +416,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'Gotham',
     });
 
@@ -300,6 +429,7 @@ describe('POST /api/register', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: '@maria.silva',
       city: 'Caxias',
     });
 

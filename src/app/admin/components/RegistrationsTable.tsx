@@ -2,6 +2,7 @@
 
 import {useState} from 'react';
 import {useRouter} from 'next/navigation';
+import {buildInstagramProfileLink, formatInstagram} from '@/lib/instagram';
 import {buildWhatsappChatLink, formatPhone} from '@/lib/phone';
 import type {Registration} from '@/lib/types';
 import {ConfirmDialog} from './ConfirmDialog';
@@ -82,6 +83,7 @@ export const RegistrationsTable = ({
                 <th>Nome</th>
                 <th>WhatsApp</th>
                 <th>E-mail</th>
+                <th>Instagram</th>
                 <th>Cidade</th>
                 <th>Data</th>
                 <th>Ações</th>
@@ -93,12 +95,17 @@ export const RegistrationsTable = ({
                   <td>{registration.name}</td>
                   <td className="mono">{formatPhone(registration.whatsapp)}</td>
                   <td>{registration.email}</td>
+                  <td>
+                    {registration.instagram
+                      ? formatInstagram(registration.instagram)
+                      : '—'}
+                  </td>
                   <td>{registration.city}</td>
                   <td className="mono">
                     {formatDateTime(registration.createdAt)}
                   </td>
                   <td>
-                    <div className="row-actions">
+                    <div className="row-actions row-actions--start">
                       <a
                         className="btn btn--small btn--whatsapp"
                         href={buildWhatsappChatLink(registration.whatsapp)}
@@ -108,6 +115,19 @@ export const RegistrationsTable = ({
                       >
                         WhatsApp
                       </a>
+                      {registration.instagram ? (
+                        <a
+                          className="btn btn--small btn--instagram"
+                          href={buildInstagramProfileLink(
+                            registration.instagram,
+                          )}
+                          target="_blank"
+                          rel="noreferrer"
+                          aria-label={`Ver o Instagram de ${registration.name}`}
+                        >
+                          Instagram
+                        </a>
+                      ) : null}
                       <button
                         className="btn btn--small btn--danger"
                         onClick={() => setPendingRemoval(registration)}

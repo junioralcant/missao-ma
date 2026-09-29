@@ -26,6 +26,7 @@ type RegistrationRow = {
   name: string;
   whatsapp: string | null;
   email: string | null;
+  instagram: string | null;
   city: string;
   created_at: string;
 };
@@ -43,6 +44,7 @@ const toRegistration = (row: RegistrationRow): Registration => ({
   name: row.name,
   whatsapp: row.whatsapp ?? '',
   email: row.email ?? '',
+  instagram: row.instagram ?? '',
   city: row.city,
   createdAt: row.created_at,
 });
@@ -94,11 +96,11 @@ export const deleteGroup = (id: number): boolean =>
 export const upsertRegistration = (input: RegistrationInput): void => {
   getDb()
     .prepare(
-      `INSERT INTO registrations (name, whatsapp, email, city) VALUES (?, ?, ?, ?)
+      `INSERT INTO registrations (name, whatsapp, email, instagram, city) VALUES (?, ?, ?, ?, ?)
      ON CONFLICT (whatsapp)
-     DO UPDATE SET name = excluded.name, email = excluded.email, created_at = datetime('now')`,
+     DO UPDATE SET name = excluded.name, email = excluded.email, instagram = excluded.instagram, created_at = datetime('now')`,
     )
-    .run(input.name, input.whatsapp, input.email, input.city);
+    .run(input.name, input.whatsapp, input.email, input.instagram, input.city);
 };
 
 export const getRegistrationByWhatsapp = (
@@ -116,6 +118,25 @@ export const getRegistrationByEmail = (email: string): Registration | null => {
     .get(email) as unknown as RegistrationRow | undefined;
   return row ? toRegistration(row) : null;
 };
+
+export const getRegistrationByInstagram = (
+  instagram: string,
+): Registration | null => {
+  const row = getDb()
+    .prepare('SELECT * FROM registrations WHERE instagram = ?')
+    .get(instagram) as unknown as RegistrationRow | undefined;
+  return row ? toRegistration(row) : null;
+};
+
+export const updateRegistrationInstagram = (
+  whatsapp: string,
+  instagram: string,
+): boolean =>
+  Number(
+    getDb()
+      .prepare('UPDATE registrations SET instagram = ? WHERE whatsapp = ?')
+      .run(instagram, whatsapp).changes,
+  ) > 0;
 
 export const deleteRegistration = (id: number): boolean =>
   Number(

@@ -156,6 +156,7 @@ describe('migração dos cadastros com CPF', () => {
       name: 'Brenda Marques',
       whatsapp: '',
       email: '',
+      instagram: '',
       city: 'Açailândia',
       createdAt: '2026-08-24 14:33:18',
     });
@@ -180,6 +181,7 @@ describe('migração dos cadastros com CPF', () => {
       name: 'Maria Silva',
       whatsapp: '98999887766',
       email: 'maria@exemplo.com',
+      instagram: 'maria.silva',
       city: 'São Luís',
     });
 
@@ -245,6 +247,7 @@ describe('migração dos cadastros com e-mail repetido', () => {
         name: 'Carlos Lima',
         whatsapp: '98966554433',
         email: 'ana@exemplo.com',
+        instagram: 'carlos.lima',
         city: 'Bacabal',
       }),
     ).toThrow();
@@ -253,6 +256,54 @@ describe('migração dos cadastros com e-mail repetido', () => {
   it('não deve rodar de novo em um banco já migrado', () => {
     const repository = loadRepository(databasePath);
     expect(repository.listRegistrations()).toHaveLength(4);
+  });
+});
+
+describe('migração dos cadastros sem Instagram', () => {
+  const originalDatabasePath = process.env.DATABASE_PATH;
+  let databasePath: string;
+  let repository: typeof import('../repository');
+
+  beforeAll(() => {
+    databasePath = createDuplicateEmailDatabase();
+    repository = loadRepository(databasePath);
+  });
+
+  afterAll(() => {
+    process.env.DATABASE_PATH = originalDatabasePath;
+    delete (globalThis as {appDatabase?: unknown}).appDatabase;
+  });
+
+  it('deve deixar o Instagram em branco nos cadastros antigos', () => {
+    for (const registration of repository.listRegistrations()) {
+      expect(registration.instagram).toBe('');
+    }
+  });
+
+  it('deve gravar o Instagram quando o cadastro antigo é refeito', () => {
+    repository.upsertRegistration({
+      name: 'Ana Souza',
+      whatsapp: '98977665544',
+      email: 'ana@exemplo.com',
+      instagram: 'ana.souza',
+      city: 'Imperatriz',
+    });
+
+    expect(repository.getRegistrationByWhatsapp('98977665544')?.instagram).toBe(
+      'ana.souza',
+    );
+  });
+
+  it('deve recusar Instagram já usado por outro cadastro', () => {
+    expect(() =>
+      repository.upsertRegistration({
+        name: 'Carlos Lima',
+        whatsapp: '98966554433',
+        email: 'carlos@exemplo.com',
+        instagram: 'ana.souza',
+        city: 'Bacabal',
+      }),
+    ).toThrow();
   });
 });
 

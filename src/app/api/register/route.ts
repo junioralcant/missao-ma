@@ -1,10 +1,12 @@
 import {NextResponse} from 'next/server';
 import {isValidEmail, normalizeEmail} from '@/lib/email';
+import {isValidInstagram, normalizeInstagram} from '@/lib/instagram';
 import {isValidPhone, normalizePhone} from '@/lib/phone';
 import {
   getDefaultGroupLink,
   getGroupByCity,
   getRegistrationByEmail,
+  getRegistrationByInstagram,
   getRegistrationByWhatsapp,
   upsertRegistration,
 } from '@/lib/repository';
@@ -18,6 +20,9 @@ export async function POST(request: Request) {
   );
   const email = normalizeEmail(
     typeof body?.email === 'string' ? body.email : '',
+  );
+  const instagram = normalizeInstagram(
+    typeof body?.instagram === 'string' ? body.instagram : '',
   );
   const city = typeof body?.city === 'string' ? body.city.trim() : '';
 
@@ -35,6 +40,12 @@ export async function POST(request: Request) {
   }
   if (!isValidEmail(email)) {
     return NextResponse.json({error: 'E-mail inválido.'}, {status: 400});
+  }
+  if (!isValidInstagram(instagram)) {
+    return NextResponse.json(
+      {error: 'Informe um usuário do Instagram válido.'},
+      {status: 400},
+    );
   }
   if (!isMaranhaoMunicipality(city)) {
     return NextResponse.json(
@@ -59,6 +70,17 @@ export async function POST(request: Request) {
     );
   }
 
+  const registrationWithInstagram = getRegistrationByInstagram(instagram);
+  if (
+    registrationWithInstagram &&
+    registrationWithInstagram.whatsapp !== whatsapp
+  ) {
+    return NextResponse.json(
+      {error: 'Este Instagram já está cadastrado.'},
+      {status: 409},
+    );
+  }
+
   const whatsappLink =
     getGroupByCity(city)?.whatsappLink ?? getDefaultGroupLink();
   if (!whatsappLink) {
@@ -68,6 +90,6 @@ export async function POST(request: Request) {
     );
   }
 
-  upsertRegistration({name, whatsapp, email, city});
+  upsertRegistration({name, whatsapp, email, instagram, city});
   return NextResponse.json({whatsappLink});
 }

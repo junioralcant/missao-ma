@@ -11,6 +11,8 @@ import {
   getGroupByCity,
   getGroupById,
   getRegistrationByEmail,
+  getRegistrationByInstagram,
+  updateRegistrationInstagram,
   getRegistrationByWhatsapp,
   getSignatureByEmail,
   getSignatureById,
@@ -96,6 +98,7 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
 
@@ -104,6 +107,7 @@ describe('repository', () => {
       expect(registrations[0].name).toBe('Maria Silva');
       expect(registrations[0].whatsapp).toBe('98999887766');
       expect(registrations[0].email).toBe('maria@exemplo.com');
+      expect(registrations[0].instagram).toBe('maria');
       expect(registrations[0].city).toBe('São Luís');
     });
 
@@ -112,12 +116,14 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Maria S. Santos',
         whatsapp: '98999887766',
         email: 'maria.santos@exemplo.com',
+        instagram: 'maria.santos',
         city: 'São Luís',
       });
 
@@ -132,12 +138,14 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'Imperatriz',
       });
 
@@ -151,6 +159,7 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
 
@@ -165,6 +174,7 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
 
@@ -174,11 +184,66 @@ describe('repository', () => {
       expect(getRegistrationByEmail('outra@exemplo.com')).toBe(null);
     });
 
+    it('deve encontrar cadastro pelo Instagram', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
+        instagram: 'maria.silva',
+        city: 'São Luís',
+      });
+
+      expect(getRegistrationByInstagram('maria.silva')?.name).toBe(
+        'Maria Silva',
+      );
+      expect(getRegistrationByInstagram('outra.pessoa')).toBe(null);
+    });
+
+    it('deve atualizar o Instagram pelo WhatsApp e sinalizar quando não existe', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
+        instagram: 'maria.silva',
+        city: 'São Luís',
+      });
+
+      expect(updateRegistrationInstagram('98999887766', 'maria.nova')).toBe(
+        true,
+      );
+      expect(getRegistrationByWhatsapp('98999887766')?.instagram).toBe(
+        'maria.nova',
+      );
+      expect(updateRegistrationInstagram('98988776655', 'outra')).toBe(false);
+    });
+
+    it('não deve aceitar o mesmo Instagram em dois cadastros', () => {
+      upsertRegistration({
+        name: 'Maria Silva',
+        whatsapp: '98999887766',
+        email: 'maria@exemplo.com',
+        instagram: 'maria.silva',
+        city: 'São Luís',
+      });
+
+      expect(() =>
+        upsertRegistration({
+          name: 'Joao Pedro',
+          whatsapp: '98988776655',
+          email: 'joao@exemplo.com',
+          instagram: 'maria.silva',
+          city: 'São Luís',
+        }),
+      ).toThrow();
+      expect(listRegistrations()).toHaveLength(1);
+    });
+
     it('não deve aceitar o mesmo e-mail em dois cadastros', () => {
       upsertRegistration({
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
 
@@ -187,6 +252,7 @@ describe('repository', () => {
           name: 'Joao Pedro',
           whatsapp: '98988776655',
           email: 'maria@exemplo.com',
+          instagram: 'maria',
           city: 'São Luís',
         }),
       ).toThrow();
@@ -198,6 +264,7 @@ describe('repository', () => {
         name: 'Maria Silva',
         whatsapp: '98999887766',
         email: 'maria@exemplo.com',
+        instagram: 'maria',
         city: 'São Luís',
       });
       const id = listRegistrations()[0].id;
@@ -212,12 +279,14 @@ describe('repository', () => {
         name: 'Primeira Pessoa',
         whatsapp: '98999887766',
         email: 'primeira@exemplo.com',
+        instagram: 'primeira',
         city: 'São Luís',
       });
       upsertRegistration({
         name: 'Segunda Pessoa',
         whatsapp: '98988776655',
         email: 'segunda@exemplo.com',
+        instagram: 'segunda',
         city: 'São Luís',
       });
 
@@ -258,6 +327,7 @@ describe('repository — pedidos de assinatura', () => {
     name: 'Maria Silva',
     cpf: '52998224725',
     email: 'maria@exemplo.com',
+    instagram: 'maria',
     city: 'São Luís',
     tokenHash: 'hash-do-token',
     ipHash: 'hash-do-ip',

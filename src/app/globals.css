@@ -318,6 +318,19 @@ a:hover {
   background: rgba(37, 211, 102, 0.1);
 }
 
+.btn--instagram {
+  background: transparent;
+  color: #e1306c;
+  border: 1px solid rgba(225, 48, 108, 0.5);
+  font-weight: 600;
+}
+
+.btn--instagram:hover {
+  color: #e1306c;
+  border-color: #e1306c;
+  background: rgba(225, 48, 108, 0.1);
+}
+
 .btn--danger {
   background: transparent;
   color: var(--danger);
@@ -439,6 +452,11 @@ td input {
   display: flex;
   gap: 8px;
   justify-content: flex-end;
+}
+
+.row-actions--start {
+  justify-content: flex-start;
+  align-items: center;
 }
 
 .row-actions .btn--small {

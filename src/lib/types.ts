@@ -11,6 +11,7 @@ export type Registration = {
   name: string;
   whatsapp: string;
   email: string;
+  instagram: string;
   city: string;
   createdAt: string;
 };
@@ -19,6 +20,7 @@ export type RegistrationInput = {
   name: string;
   whatsapp: string;
   email: string;
+  instagram: string;
   city: string;
 };
 

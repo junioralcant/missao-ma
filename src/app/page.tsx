@@ -26,7 +26,7 @@ export default function HomePage() {
           <RegistrationForm cities={cities} />
         </section>
         <p className="footer-note">
-          Seus dados (nome, WhatsApp, e-mail e cidade de atuação) são
+          Seus dados (nome, WhatsApp, e-mail, Instagram e cidade de atuação) são
           armazenados apenas para controle de participação nos grupos.
         </p>
         <p className="footer-note">

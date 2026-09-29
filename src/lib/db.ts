@@ -20,6 +20,7 @@ const REGISTRATIONS_TABLE_SCHEMA = `
     name TEXT NOT NULL,
     whatsapp TEXT UNIQUE,
     email TEXT UNIQUE,
+    instagram TEXT,
     city TEXT NOT NULL,
     created_at TEXT NOT NULL DEFAULT (datetime('now'))
   );
@@ -41,6 +42,13 @@ const migrateSignaturesEmail = (database: DatabaseSync): void => {
     return;
   }
   database.exec('ALTER TABLE signatures ADD COLUMN email TEXT;');
+};
+
+const migrateRegistrationsInstagram = (database: DatabaseSync): void => {
+  if (hasColumn(database, 'registrations', 'instagram')) {
+    return;
+  }
+  database.exec('ALTER TABLE registrations ADD COLUMN instagram TEXT;');
 };
 
 const readRegistrationsSchema = (database: DatabaseSync): string | undefined =>
@@ -219,6 +227,10 @@ const createDatabase = (): DatabaseSync => {
     );
   `);
   migrateSignaturesEmail(database);
+  migrateRegistrationsInstagram(database);
+  database.exec(
+    'CREATE UNIQUE INDEX IF NOT EXISTS registrations_instagram ON registrations (instagram);',
+  );
   database.exec(
     'CREATE UNIQUE INDEX IF NOT EXISTS signatures_email ON signatures (email);',
   );
