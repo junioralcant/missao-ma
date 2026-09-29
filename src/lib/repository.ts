@@ -134,7 +134,9 @@ export const updateRegistrationInstagram = (
 ): boolean =>
   Number(
     getDb()
-      .prepare('UPDATE registrations SET instagram = ? WHERE whatsapp = ?')
+      .prepare(
+        "UPDATE registrations SET instagram = ? WHERE whatsapp = ? AND COALESCE(instagram, '') = ''",
+      )
       .run(instagram, whatsapp).changes,
   ) > 0;
 

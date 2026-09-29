@@ -38,7 +38,7 @@ describe('POST /api/register/instagram', () => {
     );
   });
 
-  it('deve deixar a pessoa corrigir o próprio Instagram', async () => {
+  it('não deve trocar o Instagram de quem já tem um cadastrado', async () => {
     upsertRegistration({
       name: 'Maria Silva',
       whatsapp: '98999887766',
@@ -52,13 +52,17 @@ describe('POST /api/register/instagram', () => {
       instagram: 'https://www.instagram.com/maria.nova/',
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(409);
+    await expect(response.json()).resolves.toEqual({
+      error:
+        'Este WhatsApp já tem um Instagram cadastrado. Para alterar, fale com a organização.',
+    });
     expect(getRegistrationByWhatsapp('98999887766')?.instagram).toBe(
-      'maria.nova',
+      'maria.silva',
     );
   });
 
-  it('deve aceitar reenviar o mesmo Instagram do próprio cadastro', async () => {
+  it('deve recusar mesmo quando o Instagram enviado é o já cadastrado', async () => {
     upsertRegistration({
       name: 'Maria Silva',
       whatsapp: '98999887766',
@@ -72,7 +76,26 @@ describe('POST /api/register/instagram', () => {
       instagram: 'maria.silva',
     });
 
-    expect(response.status).toBe(200);
+    expect(response.status).toBe(409);
+  });
+
+  it('deve aceitar só a primeira de duas tentativas seguidas no mesmo WhatsApp', async () => {
+    insertWithoutInstagram('98999887766', 'maria@exemplo.com');
+
+    const first = await postInstagram({
+      whatsapp: '98999887766',
+      instagram: 'maria.silva',
+    });
+    const second = await postInstagram({
+      whatsapp: '98999887766',
+      instagram: 'outra.pessoa',
+    });
+
+    expect(first.status).toBe(200);
+    expect(second.status).toBe(409);
+    expect(getRegistrationByWhatsapp('98999887766')?.instagram).toBe(
+      'maria.silva',
+    );
   });
 
   it('deve recusar WhatsApp sem cadastro', async () => {

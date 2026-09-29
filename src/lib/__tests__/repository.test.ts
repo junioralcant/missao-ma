@@ -199,7 +199,22 @@ describe('repository', () => {
       expect(getRegistrationByInstagram('outra.pessoa')).toBe(null);
     });
 
-    it('deve atualizar o Instagram pelo WhatsApp e sinalizar quando não existe', () => {
+    it('deve gravar o Instagram pelo WhatsApp quando o cadastro não tem', () => {
+      getDb()
+        .prepare(
+          'INSERT INTO registrations (name, whatsapp, email, city) VALUES (?, ?, ?, ?)',
+        )
+        .run('Maria Silva', '98999887766', 'maria@exemplo.com', 'São Luís');
+
+      expect(updateRegistrationInstagram('98999887766', 'maria.silva')).toBe(
+        true,
+      );
+      expect(getRegistrationByWhatsapp('98999887766')?.instagram).toBe(
+        'maria.silva',
+      );
+    });
+
+    it('não deve sobrescrever o Instagram já gravado', () => {
       upsertRegistration({
         name: 'Maria Silva',
         whatsapp: '98999887766',
@@ -209,11 +224,14 @@ describe('repository', () => {
       });
 
       expect(updateRegistrationInstagram('98999887766', 'maria.nova')).toBe(
-        true,
+        false,
       );
       expect(getRegistrationByWhatsapp('98999887766')?.instagram).toBe(
-        'maria.nova',
+        'maria.silva',
       );
+    });
+
+    it('deve sinalizar quando o WhatsApp não tem cadastro', () => {
       expect(updateRegistrationInstagram('98988776655', 'outra')).toBe(false);
     });
 

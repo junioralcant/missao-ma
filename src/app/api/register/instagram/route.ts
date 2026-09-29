@@ -7,6 +7,9 @@ import {
   updateRegistrationInstagram,
 } from '@/lib/repository';
 
+const INSTAGRAM_ALREADY_LINKED_ERROR =
+  'Este WhatsApp já tem um Instagram cadastrado. Para alterar, fale com a organização.';
+
 export async function POST(request: Request) {
   const body = await request.json().catch(() => null);
   const whatsapp = normalizePhone(
@@ -29,13 +32,21 @@ export async function POST(request: Request) {
     );
   }
 
-  if (!getRegistrationByWhatsapp(whatsapp)) {
+  const registration = getRegistrationByWhatsapp(whatsapp);
+  if (!registration) {
     return NextResponse.json(
       {
         error:
           'Não encontramos cadastro com este WhatsApp. Confira o número ou faça seu cadastro.',
       },
       {status: 404},
+    );
+  }
+
+  if (registration.instagram) {
+    return NextResponse.json(
+      {error: INSTAGRAM_ALREADY_LINKED_ERROR},
+      {status: 409},
     );
   }
 
@@ -50,6 +61,11 @@ export async function POST(request: Request) {
     );
   }
 
-  updateRegistrationInstagram(whatsapp, instagram);
+  if (!updateRegistrationInstagram(whatsapp, instagram)) {
+    return NextResponse.json(
+      {error: INSTAGRAM_ALREADY_LINKED_ERROR},
+      {status: 409},
+    );
+  }
   return NextResponse.json({ok: true});
 }
